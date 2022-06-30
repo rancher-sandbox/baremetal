@@ -2,6 +2,9 @@ namespace: baremetal-operator-system
 resources:
   - resource/Namespace/baremetal-operator-system.yaml
   - github.com/metal3-io/baremetal-operator/config/default?ref=capm3-v1.1.2
+images:
+  - name: quay.io/metal3-io/baremetal-operator
+    newTag: capm3-v1.1.2
 patches:
   - path: patch/ConfigMap/ironic.yaml
     target:
