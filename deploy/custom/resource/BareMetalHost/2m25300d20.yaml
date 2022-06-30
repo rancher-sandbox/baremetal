@@ -1,0 +1,23 @@
+---
+kind: BareMetalHost
+apiVersion: metal3.io/v1alpha1
+metadata:
+  name: 2m25300d20
+spec:
+  online: true
+  # bootMACAddress: 50:65:f3:6e:42:74 # 1gb-port1
+  # bootMACAddress: 50:65:f3:6e:42:75 # 1gb-port2
+  # bootMACAddress: 50:65:f3:6e:42:76 # iLO
+  bootMACAddress: 8c:dc:d4:0f:10:98 # 10gb-port1
+  # bootMACAddress: 8c:dc:d4:0f:10:9c # 10gb-port2
+  bootMode: legacy
+  bmc:
+    address: ilo4-virtualmedia://2m25300d20.ilo.metal.suse.network
+    credentialsName: 2m25300d20-credentials
+  # externallyProvisioned: true
+  image:
+    url: https://media.metal.suse.network/elemental.iso
+    format: live-iso
+  userData:
+    namespace: ilo
+    name: 2m25300d20-user-data

@@ -1,0 +1,14 @@
+---
+kind: BareMetalHost
+apiVersion: metal3.io/v1alpha1
+metadata:
+  name: j10083w6
+spec:
+  online: true
+  bootMACAddress: 7c:d3:0a:5b:b4:7d
+  bmc:
+    address: redfish://j10083w6.ilo.metal.suse.network/redfish/v1/Systems/1
+    credentialsName: j10083w6-credentials
+  userData:
+    namespace: ilo
+    name: j10083w6-user-data

@@ -1,0 +1,35 @@
+---
+kind: Ingress
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: media
+  namespace: ilo
+  annotations:
+    cert-manager.io/issuer: letsencrypt-prod
+spec:
+  tls:
+    - hosts:
+        - media.metal.suse.network
+      secretName: media-certificate
+  defaultBackend:
+    service:
+      name: media
+      port:
+        number: 80
+  #   resource:
+  #     kind: Service
+  #     name: assets
+  rules:
+    - host: media.metal.suse.network
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: media
+                port:
+                  number: 80
+              # resource:
+              #   kind: Service
+              #   name: assets

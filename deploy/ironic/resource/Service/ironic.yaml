@@ -1,0 +1,16 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: ironic
+  namespace: capm3-system
+spec:
+  ports:
+    - name: httpd
+      port: 6180
+    - name: api
+      port: 6385
+    - name: inspector
+      port: 5050
+  selector:
+    name: capm3-ironic

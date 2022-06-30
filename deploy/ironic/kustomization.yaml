@@ -1,0 +1,22 @@
+namespace: capm3-system
+resources:
+  - resource/Namespace/capm3-system.yaml
+  - resource/ConfigMap/ironic
+  - resource/ConfigMap/ironic-ipa-downloader
+  - github.com/metal3-io/baremetal-operator/ironic-deployment/default?ref=capm3-v1.1.2
+  - resource/Secret/dns-provider-credentials.yaml
+  - resource/Issuer/letsencrypt-prod.yaml
+  - resource/Service/ironic.yaml
+  - resource/Ingress/ironic.yaml
+patches:
+  - path: patch/Deployment/ironic.yaml
+    target:
+      group: apps
+      version: v1
+      kind: Deployment
+      # name: ${NAMEPREFIX}-ironic
+  - path: patch/ConfigMap/ironic.yaml
+    target:
+      version: v1
+      kind: ConfigMap
+      name: ironic-bmo-configmap

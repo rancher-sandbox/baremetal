@@ -1,0 +1,28 @@
+---
+kind: Ingress
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: ilo-2m25300d3h
+  namespace: ilo
+  annotations:
+    cert-manager.io/issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+spec:
+  tls:
+    - hosts:
+        - 2m25300d3h.ilo.metal.suse.network
+      secretName: 2m25300d3h-certificate
+  rules:
+    - host: 2m25300d3h.ilo.metal.suse.network
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              # resource:
+              #   kind: Service
+              #   name: ilo-2m25300d3h
+              service:
+                name: ilo-2m25300d3h
+                port:
+                  number: 443

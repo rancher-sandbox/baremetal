@@ -1,0 +1,25 @@
+namespace: capm3-system
+configMapGenerator:
+  - name: ironic
+    files:
+      - bin/configure-coreos-ipa
+      - bin/configure-ironic.sh
+      - bin/coreos-ipa-common.sh
+      - bin/ironic-common.sh
+      - bin/rundnsmasq
+      - bin/runhttpd
+      - bin/runironic
+      - bin/runironic-api
+      - bin/runironic-conductor
+      - bin/runironic-exporter
+      - bin/runironic-inspector
+      - bin/runlogwatch.sh
+      - bin/tls-common.sh
+      - etc/dnsmasq.conf.j2
+      - etc/httpd-ironic-api.conf.j2
+      - etc/httpd-vmedia.conf.j2
+      - etc/httpd/conf.d/inspector-apache.conf.j2
+      - etc/ironic-inspector/ironic-inspector.conf.j2
+      - etc/ironic/ironic.conf.j2
+      - tmp/inspector.ipxe.j2
+      - tmp/ironic-python-agent.ign.j2

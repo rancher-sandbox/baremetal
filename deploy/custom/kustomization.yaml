@@ -1,0 +1,38 @@
+namespace: ilo
+resources:
+  - resource/Namespace/ilo.yaml
+  - resource/Secret/dns-provider-credentials.yaml
+  - resource/Issuer/letsencrypt-prod.yaml
+
+  - resource/StorageClass/local.yaml
+  - resource/PersistentVolume/media.yaml
+  - resource/PersistentVolumeClaim/media.yaml
+  - resource/Pod/media.yaml
+  - resource/Service/media.yaml
+  - resource/Ingress/media.yaml
+
+  - resource/Service/ilo-2m25300d1n.yaml
+  - resource/Service/ilo-2m25300d20.yaml
+  - resource/Service/ilo-2m25300d3h.yaml
+  - resource/Service/xclarity-j10083w6.yaml
+  - resource/Endpoints/ilo-2m25300d1n.yaml
+  - resource/Endpoints/ilo-2m25300d20.yaml
+  - resource/Endpoints/ilo-2m25300d3h.yaml
+  - resource/Endpoints/xclarity-j10083w6.yaml
+  - resource/Ingress/ilo-2m25300d1n.yaml
+  - resource/Ingress/ilo-2m25300d20.yaml
+  - resource/Ingress/ilo-2m25300d3h.yaml
+  - resource/Ingress/xclarity-j10083w6.yaml
+
+  - resource/Secret/2m25300d1n-credentials.yaml
+  - resource/Secret/2m25300d1n-user-data.yaml
+  - resource/Secret/2m25300d20-credentials.yaml
+  - resource/Secret/2m25300d20-user-data.yaml
+  - resource/Secret/2m25300d3h-credentials.yaml
+  - resource/Secret/2m25300d3h-user-data.yaml
+  - resource/Secret/j10083w6-credentials.yaml
+  - resource/Secret/j10083w6-user-data.yaml
+  - resource/BareMetalHost/2m25300d1n.yaml
+  - resource/BareMetalHost/2m25300d20.yaml
+  - resource/BareMetalHost/2m25300d3h.yaml
+  - resource/BareMetalHost/j10083w6.yaml

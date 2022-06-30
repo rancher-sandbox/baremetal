@@ -1,0 +1,69 @@
+---
+kind: Ingress
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: ironic
+  namespace: capm3-system
+  annotations:
+    cert-manager.io/issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "false" 
+spec:
+  tls:
+    - hosts:
+        - api.ironic.metal.suse.network
+      secretName: ironic-api-certificate
+    - hosts:
+        - inspector.ironic.metal.suse.network
+      secretName: ironic-inspector-certificate
+    - hosts:
+        - boot.ironic.metal.suse.network
+      secretName: ironic-boot-certificate
+    - hosts:
+        - cache.ironic.metal.suse.network
+      secretName: ironic-cache-certificate
+  defaultBackend:
+    service:
+      name: ironic
+      port:
+        name: api
+  rules:
+    - host: api.ironic.metal.suse.network
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ironic
+                port:
+                  name: api
+    - host: inspector.ironic.metal.suse.network
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ironic
+                port:
+                  name: inspector
+    - host: boot.ironic.metal.suse.network
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ironic
+                port:
+                  name: httpd
+    - host: cache.ironic.metal.suse.network
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ironic
+                port:
+                  name: httpd

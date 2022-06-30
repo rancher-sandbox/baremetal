@@ -1,0 +1,5 @@
+namespace: capm3-system
+configMapGenerator:
+  - name: ironic-ipa-downloader
+    files:
+      - usr/local/bin/get-resource.sh

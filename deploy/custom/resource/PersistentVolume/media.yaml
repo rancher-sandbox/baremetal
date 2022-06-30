@@ -1,0 +1,14 @@
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: media
+spec:
+  storageClassName: local
+  accessModes:
+    - ReadOnlyMany
+  capacity:
+    storage: 5Gi
+  hostPath:
+    path: /opt/media
+    type: DirectoryOrCreate

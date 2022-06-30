@@ -1,0 +1,17 @@
+---
+kind: Issuer
+apiVersion: cert-manager.io/v1
+metadata:
+  name: letsencrypt-prod
+  namespace: ilo
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-private-key
+    solvers:
+      - dns01:
+          cloudflare:
+            apiTokenSecretRef:
+              name: dns-provider-credentials
+              key: cloudflare_api_token

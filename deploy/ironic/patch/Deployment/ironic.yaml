@@ -1,0 +1,515 @@
+- op: replace
+  path: /metadata/name
+  value: capm3-ironic
+- op: replace
+  path: /spec/template/metadata/labels/name
+  value: capm3-ironic
+- op: replace
+  path: /spec/selector/matchLabels/name
+  value: capm3-ironic
+- op: add
+  path: /spec/template/metadata/labels/workload.user.cattle.io~1workloadselector
+  value: apps.deployment-capm3-system-capm3-ironic
+- op: replace
+  path: /spec/template/spec/containers/2/livenessProbe/exec/command
+  value:
+    - /bin/sh
+    - -c
+    - curl -sSf http://127.0.0.1:6385 || curl -sSfk https://127.0.0.1:6385
+- op: replace
+  path: /spec/template/spec/containers/2/readinessProbe/exec/command
+  value:
+    - /bin/sh
+    - -c
+    - curl -sSf http://127.0.0.1:6385 || curl -sSfk https://127.0.0.1:6385
+- op: replace
+  path: /spec/template/spec/containers/5/livenessProbe/exec/command
+  value:
+    - /bin/sh
+    - -c
+    - curl -sSf http://127.0.0.1:6180/boot.ipxe || curl -sSfk https://127.0.0.1:6180/boot.ipxe
+- op: replace
+  path: /spec/template/spec/containers/5/readinessProbe/exec/command
+  value:
+    - /bin/sh
+    - -c
+    - curl -sSf http://127.0.0.1:6180/boot.ipxe || curl -sSfk https://127.0.0.1:6180/boot.ipxe
+- op: add
+  path: /spec/template/spec/containers/0/ports
+  value:
+    - containerPort: 67
+      name: dhcp
+      protocol: UDP
+    - containerPort: 69
+      name: tftp
+      protocol: UDP
+- op: add
+  path: /spec/template/spec/containers/1/ports
+  value:
+    - containerPort: 3306
+      name: mariadb
+      protocol: TCP
+- op: add
+  path: /spec/template/spec/containers/2/ports
+  value:
+    - containerPort: 6385
+      name: api
+      protocol: TCP
+- op: add
+  path: /spec/template/spec/containers/4/ports
+  value:
+    - containerPort: 5050
+      name: inspector
+      protocol: TCP
+- op: add
+  path: /spec/template/spec/containers/5/ports
+  value:
+    - containerPort: 6180
+      name: httpd
+      protocol: TCP
+- op: add
+  path: /spec/template/spec/volumes/-
+  value:
+    name: ironic
+    configMap:
+      name: ironic
+      defaultMode: 0755
+- op: add
+  path: /spec/template/spec/volumes/-
+  value:
+    name: ironic-ipa-downloader
+    configMap:
+      name: ironic-ipa-downloader
+      defaultMode: 0755
+- op: replace
+  path: /spec/template/spec/containers/0/volumeMounts
+  value:
+    - name: ironic-data-volume
+      mountPath: /shared
+    - name: ironic
+      mountPath: /bin/configure-coreos-ipa
+      subPath: configure-coreos-ipa
+    - name: ironic
+      mountPath: /bin/configure-ironic.sh
+      subPath: configure-ironic.sh
+    - name: ironic
+      mountPath: /bin/coreos-ipa-common.sh
+      subPath: coreos-ipa-common.sh
+    - name: ironic
+      mountPath: /bin/ironic-common.sh
+      subPath: ironic-common.sh
+    - name: ironic
+      mountPath: /bin/rundnsmasq
+      subPath: rundnsmasq
+    - name: ironic
+      mountPath: /bin/runhttpd
+      subPath: runhttpd
+    - name: ironic
+      mountPath: /bin/runironic
+      subPath: runironic
+    - name: ironic
+      mountPath: /bin/runironic-api
+      subPath: runironic-api
+    - name: ironic
+      mountPath: /bin/runironic-conductor
+      subPath: runironic-conductor
+    - name: ironic
+      mountPath: /bin/runironic-exporter
+      subPath: runironic-exporter
+    - name: ironic
+      mountPath: /bin/runironic-inspector
+      subPath: runironic-inspector
+    - name: ironic
+      mountPath: /bin/runlogwatch.sh
+      subPath: runlogwatch.sh
+    - name: ironic
+      mountPath: /bin/tls-common.sh
+      subPath: tls-common.sh
+    - name: ironic
+      mountPath: /etc/dnsmasq.conf.j2
+      subPath: dnsmasq.conf.j2
+    - name: ironic
+      mountPath: /etc/httpd-ironic-api.conf.j2
+      subPath: httpd-ironic-api.conf.j2
+    - name: ironic
+      mountPath: /etc/httpd-vmedia.conf.j2
+      subPath: httpd-vmedia.conf.j2
+    - name: ironic
+      mountPath: /etc/httpd/conf.d/inspector-apache.conf.j2
+      subPath: inspector-apache.conf.j2
+    - name: ironic
+      mountPath: /etc/ironic-inspector/ironic-inspector.conf.j2
+      subPath: ironic-inspector.conf.j2
+    - name: ironic
+      mountPath: /etc/ironic/ironic.conf.j2
+      subPath: ironic.conf.j2
+    - name: ironic
+      mountPath: /tmp/inspector.ipxe.j2
+      subPath: inspector.ipxe.j2
+    - name: ironic
+      mountPath: /tmp/ironic-python-agent.ign.j2
+      subPath: ironic-python-agent.ign.j2
+    - name: ironic-ipa-downloader
+      mountPath: /usr/local/bin/get-resource.sh
+      subPath: get-resource.sh
+
+- op: replace
+  path: /spec/template/spec/containers/1/volumeMounts
+  value:
+    - name: ironic-data-volume
+      mountPath: /shared
+    - name: ironic
+      mountPath: /bin/configure-coreos-ipa
+      subPath: configure-coreos-ipa
+    - name: ironic
+      mountPath: /bin/configure-ironic.sh
+      subPath: configure-ironic.sh
+    - name: ironic
+      mountPath: /bin/coreos-ipa-common.sh
+      subPath: coreos-ipa-common.sh
+    - name: ironic
+      mountPath: /bin/ironic-common.sh
+      subPath: ironic-common.sh
+    - name: ironic
+      mountPath: /bin/rundnsmasq
+      subPath: rundnsmasq
+    - name: ironic
+      mountPath: /bin/runhttpd
+      subPath: runhttpd
+    - name: ironic
+      mountPath: /bin/runironic
+      subPath: runironic
+    - name: ironic
+      mountPath: /bin/runironic-api
+      subPath: runironic-api
+    - name: ironic
+      mountPath: /bin/runironic-conductor
+      subPath: runironic-conductor
+    - name: ironic
+      mountPath: /bin/runironic-exporter
+      subPath: runironic-exporter
+    - name: ironic
+      mountPath: /bin/runironic-inspector
+      subPath: runironic-inspector
+    - name: ironic
+      mountPath: /bin/runlogwatch.sh
+      subPath: runlogwatch.sh
+    - name: ironic
+      mountPath: /bin/tls-common.sh
+      subPath: tls-common.sh
+    - name: ironic
+      mountPath: /etc/dnsmasq.conf.j2
+      subPath: dnsmasq.conf.j2
+    - name: ironic
+      mountPath: /etc/httpd-ironic-api.conf.j2
+      subPath: httpd-ironic-api.conf.j2
+    - name: ironic
+      mountPath: /etc/httpd-vmedia.conf.j2
+      subPath: httpd-vmedia.conf.j2
+    - name: ironic
+      mountPath: /etc/httpd/conf.d/inspector-apache.conf.j2
+      subPath: inspector-apache.conf.j2
+    - name: ironic
+      mountPath: /etc/ironic-inspector/ironic-inspector.conf.j2
+      subPath: ironic-inspector.conf.j2
+    - name: ironic
+      mountPath: /etc/ironic/ironic.conf.j2
+      subPath: ironic.conf.j2
+    - name: ironic
+      mountPath: /tmp/inspector.ipxe.j2
+      subPath: inspector.ipxe.j2
+    - name: ironic
+      mountPath: /tmp/ironic-python-agent.ign.j2
+      subPath: ironic-python-agent.ign.j2
+    - name: ironic-ipa-downloader
+      mountPath: /usr/local/bin/get-resource.sh
+      subPath: get-resource.sh
+
+- op: replace
+  path: /spec/template/spec/containers/2/volumeMounts
+  value:
+    - name: ironic-data-volume
+      mountPath: /shared
+    - name: ironic
+      mountPath: /bin/configure-coreos-ipa
+      subPath: configure-coreos-ipa
+    - name: ironic
+      mountPath: /bin/configure-ironic.sh
+      subPath: configure-ironic.sh
+    - name: ironic
+      mountPath: /bin/coreos-ipa-common.sh
+      subPath: coreos-ipa-common.sh
+    - name: ironic
+      mountPath: /bin/ironic-common.sh
+      subPath: ironic-common.sh
+    - name: ironic
+      mountPath: /bin/rundnsmasq
+      subPath: rundnsmasq
+    - name: ironic
+      mountPath: /bin/runhttpd
+      subPath: runhttpd
+    - name: ironic
+      mountPath: /bin/runironic
+      subPath: runironic
+    - name: ironic
+      mountPath: /bin/runironic-api
+      subPath: runironic-api
+    - name: ironic
+      mountPath: /bin/runironic-conductor
+      subPath: runironic-conductor
+    - name: ironic
+      mountPath: /bin/runironic-exporter
+      subPath: runironic-exporter
+    - name: ironic
+      mountPath: /bin/runironic-inspector
+      subPath: runironic-inspector
+    - name: ironic
+      mountPath: /bin/runlogwatch.sh
+      subPath: runlogwatch.sh
+    - name: ironic
+      mountPath: /bin/tls-common.sh
+      subPath: tls-common.sh
+    - name: ironic
+      mountPath: /etc/dnsmasq.conf.j2
+      subPath: dnsmasq.conf.j2
+    - name: ironic
+      mountPath: /etc/httpd-ironic-api.conf.j2
+      subPath: httpd-ironic-api.conf.j2
+    - name: ironic
+      mountPath: /etc/httpd-vmedia.conf.j2
+      subPath: httpd-vmedia.conf.j2
+    - name: ironic
+      mountPath: /etc/httpd/conf.d/inspector-apache.conf.j2
+      subPath: inspector-apache.conf.j2
+    - name: ironic
+      mountPath: /etc/ironic-inspector/ironic-inspector.conf.j2
+      subPath: ironic-inspector.conf.j2
+    - name: ironic
+      mountPath: /etc/ironic/ironic.conf.j2
+      subPath: ironic.conf.j2
+    - name: ironic
+      mountPath: /tmp/inspector.ipxe.j2
+      subPath: inspector.ipxe.j2
+    - name: ironic
+      mountPath: /tmp/ironic-python-agent.ign.j2
+      subPath: ironic-python-agent.ign.j2
+    - name: ironic-ipa-downloader
+      mountPath: /usr/local/bin/get-resource.sh
+      subPath: get-resource.sh
+
+- op: replace
+  path: /spec/template/spec/containers/3/volumeMounts
+  value:
+    - name: ironic-data-volume
+      mountPath: /shared
+    - name: ironic
+      mountPath: /bin/configure-coreos-ipa
+      subPath: configure-coreos-ipa
+    - name: ironic
+      mountPath: /bin/configure-ironic.sh
+      subPath: configure-ironic.sh
+    - name: ironic
+      mountPath: /bin/coreos-ipa-common.sh
+      subPath: coreos-ipa-common.sh
+    - name: ironic
+      mountPath: /bin/ironic-common.sh
+      subPath: ironic-common.sh
+    - name: ironic
+      mountPath: /bin/rundnsmasq
+      subPath: rundnsmasq
+    - name: ironic
+      mountPath: /bin/runhttpd
+      subPath: runhttpd
+    - name: ironic
+      mountPath: /bin/runironic
+      subPath: runironic
+    - name: ironic
+      mountPath: /bin/runironic-api
+      subPath: runironic-api
+    - name: ironic
+      mountPath: /bin/runironic-conductor
+      subPath: runironic-conductor
+    - name: ironic
+      mountPath: /bin/runironic-exporter
+      subPath: runironic-exporter
+    - name: ironic
+      mountPath: /bin/runironic-inspector
+      subPath: runironic-inspector
+    - name: ironic
+      mountPath: /bin/runlogwatch.sh
+      subPath: runlogwatch.sh
+    - name: ironic
+      mountPath: /bin/tls-common.sh
+      subPath: tls-common.sh
+    - name: ironic
+      mountPath: /etc/dnsmasq.conf.j2
+      subPath: dnsmasq.conf.j2
+    - name: ironic
+      mountPath: /etc/httpd-ironic-api.conf.j2
+      subPath: httpd-ironic-api.conf.j2
+    - name: ironic
+      mountPath: /etc/httpd-vmedia.conf.j2
+      subPath: httpd-vmedia.conf.j2
+    - name: ironic
+      mountPath: /etc/httpd/conf.d/inspector-apache.conf.j2
+      subPath: inspector-apache.conf.j2
+    - name: ironic
+      mountPath: /etc/ironic-inspector/ironic-inspector.conf.j2
+      subPath: ironic-inspector.conf.j2
+    - name: ironic
+      mountPath: /etc/ironic/ironic.conf.j2
+      subPath: ironic.conf.j2
+    - name: ironic
+      mountPath: /tmp/inspector.ipxe.j2
+      subPath: inspector.ipxe.j2
+    - name: ironic
+      mountPath: /tmp/ironic-python-agent.ign.j2
+      subPath: ironic-python-agent.ign.j2
+    - name: ironic-ipa-downloader
+      mountPath: /usr/local/bin/get-resource.sh
+      subPath: get-resource.sh
+
+- op: replace
+  path: /spec/template/spec/containers/4/volumeMounts
+  value:
+    - name: ironic-data-volume
+      mountPath: /shared
+    - name: ironic
+      mountPath: /bin/configure-coreos-ipa
+      subPath: configure-coreos-ipa
+    - name: ironic
+      mountPath: /bin/configure-ironic.sh
+      subPath: configure-ironic.sh
+    - name: ironic
+      mountPath: /bin/coreos-ipa-common.sh
+      subPath: coreos-ipa-common.sh
+    - name: ironic
+      mountPath: /bin/ironic-common.sh
+      subPath: ironic-common.sh
+    - name: ironic
+      mountPath: /bin/rundnsmasq
+      subPath: rundnsmasq
+    - name: ironic
+      mountPath: /bin/runhttpd
+      subPath: runhttpd
+    - name: ironic
+      mountPath: /bin/runironic
+      subPath: runironic
+    - name: ironic
+      mountPath: /bin/runironic-api
+      subPath: runironic-api
+    - name: ironic
+      mountPath: /bin/runironic-conductor
+      subPath: runironic-conductor
+    - name: ironic
+      mountPath: /bin/runironic-exporter
+      subPath: runironic-exporter
+    - name: ironic
+      mountPath: /bin/runironic-inspector
+      subPath: runironic-inspector
+    - name: ironic
+      mountPath: /bin/runlogwatch.sh
+      subPath: runlogwatch.sh
+    - name: ironic
+      mountPath: /bin/tls-common.sh
+      subPath: tls-common.sh
+    - name: ironic
+      mountPath: /etc/dnsmasq.conf.j2
+      subPath: dnsmasq.conf.j2
+    - name: ironic
+      mountPath: /etc/httpd-ironic-api.conf.j2
+      subPath: httpd-ironic-api.conf.j2
+    - name: ironic
+      mountPath: /etc/httpd-vmedia.conf.j2
+      subPath: httpd-vmedia.conf.j2
+    - name: ironic
+      mountPath: /etc/httpd/conf.d/inspector-apache.conf.j2
+      subPath: inspector-apache.conf.j2
+    - name: ironic
+      mountPath: /etc/ironic-inspector/ironic-inspector.conf.j2
+      subPath: ironic-inspector.conf.j2
+    - name: ironic
+      mountPath: /etc/ironic/ironic.conf.j2
+      subPath: ironic.conf.j2
+    - name: ironic
+      mountPath: /tmp/inspector.ipxe.j2
+      subPath: inspector.ipxe.j2
+    - name: ironic
+      mountPath: /tmp/ironic-python-agent.ign.j2
+      subPath: ironic-python-agent.ign.j2
+    - name: ironic-ipa-downloader
+      mountPath: /usr/local/bin/get-resource.sh
+      subPath: get-resource.sh
+
+- op: replace
+  path: /spec/template/spec/containers/5/volumeMounts
+  value:
+    - name: ironic-data-volume
+      mountPath: /shared
+    - name: ironic
+      mountPath: /bin/configure-coreos-ipa
+      subPath: configure-coreos-ipa
+    - name: ironic
+      mountPath: /bin/configure-ironic.sh
+      subPath: configure-ironic.sh
+    - name: ironic
+      mountPath: /bin/coreos-ipa-common.sh
+      subPath: coreos-ipa-common.sh
+    - name: ironic
+      mountPath: /bin/ironic-common.sh
+      subPath: ironic-common.sh
+    - name: ironic
+      mountPath: /bin/rundnsmasq
+      subPath: rundnsmasq
+    - name: ironic
+      mountPath: /bin/runhttpd
+      subPath: runhttpd
+    - name: ironic
+      mountPath: /bin/runironic
+      subPath: runironic
+    - name: ironic
+      mountPath: /bin/runironic-api
+      subPath: runironic-api
+    - name: ironic
+      mountPath: /bin/runironic-conductor
+      subPath: runironic-conductor
+    - name: ironic
+      mountPath: /bin/runironic-exporter
+      subPath: runironic-exporter
+    - name: ironic
+      mountPath: /bin/runironic-inspector
+      subPath: runironic-inspector
+    - name: ironic
+      mountPath: /bin/runlogwatch.sh
+      subPath: runlogwatch.sh
+    - name: ironic
+      mountPath: /bin/tls-common.sh
+      subPath: tls-common.sh
+    - name: ironic
+      mountPath: /etc/dnsmasq.conf.j2
+      subPath: dnsmasq.conf.j2
+    - name: ironic
+      mountPath: /etc/httpd-ironic-api.conf.j2
+      subPath: httpd-ironic-api.conf.j2
+    - name: ironic
+      mountPath: /etc/httpd-vmedia.conf.j2
+      subPath: httpd-vmedia.conf.j2
+    - name: ironic
+      mountPath: /etc/httpd/conf.d/inspector-apache.conf.j2
+      subPath: inspector-apache.conf.j2
+    - name: ironic
+      mountPath: /etc/ironic-inspector/ironic-inspector.conf.j2
+      subPath: ironic-inspector.conf.j2
+    - name: ironic
+      mountPath: /etc/ironic/ironic.conf.j2
+      subPath: ironic.conf.j2
+    - name: ironic
+      mountPath: /tmp/inspector.ipxe.j2
+      subPath: inspector.ipxe.j2
+    - name: ironic
+      mountPath: /tmp/ironic-python-agent.ign.j2
+      subPath: ironic-python-agent.ign.j2
+    - name: ironic-ipa-downloader
+      mountPath: /usr/local/bin/get-resource.sh
+      subPath: get-resource.sh
+

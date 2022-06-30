@@ -1,0 +1,36 @@
+---
+kind: Ingress
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: xclarity-j10083w6
+  namespace: ilo
+  annotations:
+    cert-manager.io/issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+spec:
+  tls:
+    - hosts:
+        - j10083w6.ilo.metal.suse.network
+      secretName: j10083w6-certificate
+  # defaultBackend:
+  #   service:
+  #     name: xclarity-j10083w6
+  #     port:
+  #       number: 443
+  #   resource:
+  #     kind: Service
+  #     name: xclarity-j10083w6
+  rules:
+    - host: j10083w6.ilo.metal.suse.network
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: xclarity-j10083w6
+                port:
+                  number: 443
+              # resource:
+              #   kind: Service
+              #   name: xclarity-j10083w6

@@ -1,0 +1,23 @@
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  name: media
+  namespace: ilo
+  labels:
+    app: nginx
+spec:
+  volumes:
+    - name: assets
+      persistentVolumeClaim:
+        claimName: media
+  containers:
+    - name: server
+      image: nginx:1.22.0-alpine
+      imagePullPolicy: Always
+      ports:
+        - containerPort: 80
+          name: http
+      volumeMounts:
+        - mountPath: /usr/share/nginx/html
+          name: assets
