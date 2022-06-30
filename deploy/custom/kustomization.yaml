@@ -7,7 +7,7 @@ resources:
   - resource/StorageClass/local.yaml
   - resource/PersistentVolume/media.yaml
   - resource/PersistentVolumeClaim/media.yaml
-  - resource/Pod/media.yaml
+  - resource/Deployment/media.yaml
   - resource/Service/media.yaml
   - resource/Ingress/media.yaml
 

@@ -1,6 +1,6 @@
 ---
 kind: Deployment
-apiVersion: v1
+apiVersion: apps/v1
 metadata:
   name: media
   namespace: ilo
@@ -12,6 +12,9 @@ spec:
     matchLabels:
       app: nginx
   template:
+    metadata:
+      labels:
+        app: nginx
     spec:
       volumes:
         - name: assets
