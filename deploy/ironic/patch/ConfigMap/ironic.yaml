@@ -23,6 +23,9 @@
   path: /data/DNSMASQ_BOOT_SERVER_ADDRESS
   value: boot.ironic.metal.suse.network
 - op: add
+  path: /data/DNSMASQ_DEFAULT_ROUTER
+  value: 172.19.28.1
+- op: add
   path: /data/DNSMASQ_DNS_SERVER_ADDRESS
   value: 172.19.28.200
 - op: add

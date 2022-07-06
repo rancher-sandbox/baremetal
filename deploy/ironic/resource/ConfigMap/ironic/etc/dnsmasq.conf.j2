@@ -11,7 +11,7 @@ log-dhcp
 dhcp-range={{ env.DHCP_RANGE }}
 
 # Disable default router(s) and DNS over provisioning network
-dhcp-option=3
+dhcp-option=3,{{ env.DNSMASQ_DEFAULT_ROUTER }}
 dhcp-option=6,{{ env.DNSMASQ_DNS_SERVER_ADDRESS }}
 
 {%- if env.IPV == "4" or env.IPV is undefined %}
@@ -42,7 +42,7 @@ dhcp-option=tag:pxe6,option6:bootfile-url,tftp://{{ env.DNSMASQ_BOOT_SERVER_ADDR
 dhcp-option=tag:ipxe6,option6:bootfile-url,http://{{ env.DNSMASQ_BOOT_SERVER_ADDRESS }}/boot.ipxe
 
 # Disable default router(s) and DNS over provisioning network
-dhcp-option=3
+dhcp-option=3,{{ env.DNSMASQ_DEFAULT_ROUTER }}
 dhcp-option=6,{{ env.DNSMASQ_DNS_SERVER_ADDRESS }}
 {% endif %}
 {% endif %}
