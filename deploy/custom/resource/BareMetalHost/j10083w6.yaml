@@ -6,9 +6,13 @@ metadata:
 spec:
   online: true
   bootMACAddress: 7c:d3:0a:5b:b4:7d
+  bootMode: legacy
   bmc:
-    address: redfish://j10083w6.ilo.metal.suse.network/redfish/v1/Systems/1
+    address: redfish-virtualmedia://j10083w6.ilo.metal.suse.network/redfish/v1/Systems/1
     credentialsName: j10083w6-credentials
+  image:
+    url: https://media.metal.suse.network/elemental.iso
+    format: live-iso
   userData:
     namespace: ilo
     name: j10083w6-user-data
