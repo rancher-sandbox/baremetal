@@ -1,0 +1,17 @@
+- op: add
+  path: /spec/template/spec/containers/0/args/-
+  value: --provider=cloudflare
+- op: add
+  path: /spec/template/spec/containers/0/args/-
+  value: --domain-filter=metal.suse.network
+- op: add
+  path: /spec/template/spec/containers/0/args/-
+  value: --policy=upsert-only
+- op: add
+  path: /spec/template/spec/containers/0/env
+  value:
+    - name: CF_API_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: dns-provider-credentials
+          key: cloudflare_api_token
