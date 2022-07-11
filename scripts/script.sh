@@ -825,21 +825,24 @@ EnsureCertManagerIsDeployed()
 # external-dns Helper Functions #
 #################################
 
+ExternalDNSIsDeployed()
+{
+    HasDeploymentInNamespace "${EXTERNAL_DNS_NAMESPACE}" "${EXTERNAL_DNS_DEPLOYMENT}"
+}
+
 DeployExternalDNS()
 {
-    EnsureHelmIsInstalled
     EnsureKubeConfigIsInstalled
-    EnsureChartRepositoryExists "${EXTERNAL_DNS_HELM_REPO}" "${EXTERNAL_DNS_HELM_REPO_URL}"
-    DeployHelmChartIntoNamespace \
-        "${EXTERNAL_DNS_NAMESPACE}" \
-        "${EXTERNAL_DNS_HELM_CHART}" \
-        "${EXTERNAL_DNS_HELM_CHART_VERSION}" \
-        "${EXTERNAL_DNS_HELM_RELEASE}" \
-        --set crd.create=true \
-        --set domainFilters="{${EXTERNAL_DNS_DOMAIN}}" \
-        --set policy="${EXTERNAL_DNS_POLICY}" \
-        --set cloudflare.proxied=false \
-        --set cloudflare.secretName="cloudflare-credentials"
+    EnsureKustomizeIsInstalled
+    AnnounceLoudly "Deploying external-dns"
+    ${PROG_KUSTOMIZE} build "${REPO_ROOT}/deploy/external-dns" \
+        | ${PROG_KUBECTL} "${1:-apply}" -f -
+}
+
+EnsureExternalDNSIsDeployed()
+{
+    ExternalDNSIsDeployed \
+        || DeployExternalDNS
 }
 
 ##############################
@@ -1192,6 +1195,7 @@ Default()
     EnsureHelmIsInstalled
     EnsureKustomizeIsInstalled
     EnsureCertManagerIsDeployed
+    EnsureExternalDNSIsDeployed
     EnsureIronicIsDeployed
     EnsureBareMetalOperatorIsDeployed
     EnsureClusterAPIIsDeployed
