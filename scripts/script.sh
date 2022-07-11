@@ -652,6 +652,12 @@ EnsureKubernetesNamespaceExists()
         || CreateKubernetesNamespace "${1}"    
 }
 
+HasDeploymentInNamespace()
+{
+    HasKubernetesNamespace "${1}" \
+        && ${PROG_KUBECTL} get "deployment/${2}" --namespace "${1}" 1>/dev/null 2>/dev/null
+}
+
 WatchKubernetesRolloutInNamespace()
 {
     EnsureKubeConfigIsInstalled
