@@ -15,11 +15,11 @@ spec:
     address: ilo4-virtualmedia://2m25300d1n.ilo.metal.suse.network
     credentialsName: 2m25300d1n-credentials
   # externallyProvisioned: true
-  image:
-    url: https://media.metal.suse.network/elemental.iso
-    checksum: https://media.metal.suse.network/elemental.iso.sha256
-    checksumType: sha256
-    # format: live-iso
+  # image:
+  #   url: https://media.metal.suse.network/elemental.iso
+  #   checksum: https://media.metal.suse.network/elemental.iso.sha256
+  #   checksumType: sha256
+  #   format: live-iso
   userData:
     namespace: ilo
     name: 2m25300d1n-user-data

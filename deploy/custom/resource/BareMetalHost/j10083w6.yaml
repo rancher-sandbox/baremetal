@@ -14,9 +14,11 @@ spec:
   bmc:
     address: redfish-virtualmedia://j10083w6.ilo.metal.suse.network/redfish/v1/Systems/1
     credentialsName: j10083w6-credentials
-  image:
-    url: https://media.metal.suse.network/elemental.iso
-    format: live-iso
+  # image:
+  #   url: https://media.metal.suse.network/elemental.iso
+  #   checksum: https://media.metal.suse.network/elemental.iso.sha256
+  #   checksumType: sha256
+  #   format: live-iso
   userData:
     namespace: ilo
     name: j10083w6-user-data
