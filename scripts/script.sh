@@ -962,6 +962,15 @@ ClusterAPIIsInstalled()
     HasKubernetesNamespace "${CLUSTER_API_NAMESPACE}"
 }
 
+ClusterAPIIsDeployed()
+{
+    ${PROG_TRUE} \
+        && HasDeploymentInNamespace "${CLUSTER_API_CORE_NAMESPACE}"           "${CLUSTER_API_CORE_DEPLOYMENT}" \
+        && HasDeploymentInNamespace "${CLUSTER_API_BOOTSTRAP_NAMESPACE}"      "${CLUSTER_API_BOOTSTRAP_DEPLOYMENT}" \
+        && HasDeploymentInNamespace "${CLUSTER_API_CONTROL_PLANE_NAMESPACE}"  "${CLUSTER_API_CONTROL_PLANE_DEPLOYMENT}" \
+        && HasDeploymentInNamespace "${CLUSTER_API_INFRASTRUCTURE_NAMESPACE}" "${CLUSTER_API_INFRASTRUCTURE_DEPLOYMENT}"
+}
+
 DeployClusterAPI()
 {
     ClusterAPIIsInstalled && return
@@ -973,6 +982,12 @@ DeployClusterAPI()
         --bootstrap "kubeadm:v${CLUSTER_API_VERSION}" \
         --control-plane "kubeadm:v${CLUSTER_API_VERSION}" \
         --infrastructure "metal3:v${BAREMETAL_OPERATOR_VERSION}"
+}
+
+EnsureClusterAPIIsDeployed()
+{
+    ClusterAPIIsDeployed \
+        || DeployClusterAPI
 }
 
 ############################
@@ -1149,7 +1164,7 @@ Default()
     EnsureCertManagerIsDeployed
     EnsureIronicIsDeployed
     EnsureBareMetalOperatorIsDeployed
-    DeployClusterAPI
+    EnsureClusterAPIIsDeployed
     DeployRancher
 }
 
