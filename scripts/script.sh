@@ -96,6 +96,8 @@ ${PROG_WHICH:="which"} \
 : ${DOWNLOADS:="${PREFIX}/downloads"}
 : ${SOURCES:="${PREFIX}/src"}
 
+: ${REPO_ROOT:=$(${PROG_GIT} -C "${0%/*}" rev-parse --show-toplevel)}
+
 ####################################################
 # Programs expected to be installed by this script #
 ####################################################
@@ -871,7 +873,7 @@ DeployBareMetalOperator()
     EnsureKubeConfigIsInstalled
     EnsureKustomizeIsInstalled
     AnnounceLoudly "Deploying baremetal-operator"
-    ${PROG_KUSTOMIZE} build /opt/hacks/custom/baremetal-operator \
+    ${PROG_KUSTOMIZE} build "${REPO_ROOT}/deploy/baremetal-operator" \
         | ${PROG_KUBECTL} "${1:-apply}" -f -
 }
 ###########################
@@ -884,7 +886,7 @@ DeployIronic()
     EnsureKustomizeIsInstalled
 
     AnnounceLoudly "Deploying Ironic"
-    ${PROG_KUSTOMIZE} build /opt/hacks/custom/ironic \
+    ${PROG_KUSTOMIZE} build "${REPO_ROOT}/deploy/ironic" \
         | ${PROG_KUBECTL} "${1:-apply}" -f -
 }
 
