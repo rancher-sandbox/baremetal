@@ -1154,6 +1154,31 @@ EnsureRancherOSOperatorIsDeployed()
         || DeployRancherOSOperator
 }
 
+############################
+# Ingress Helper Functions #
+############################
+
+SnippetAnnotationsAreAllowed()
+{
+    ${PROG_TEST} "true" = \
+        $(${PROG_KUBECTL} get "configmap/${RKE2_INGRESS_CONFIG_MAP}" \
+            --namespace "${RKE2_INGRESS_NAMESPACE}" \
+            --output jsonpath="{.data.allow-snippet-annotations}")
+}
+
+AllowSnippetAnnotations()
+{
+    ${PROG_KUBECTL} patch "configmap/${RKE2_INGRESS_CONFIG_MAP}" \
+        --namespace "${RKE2_INGRESS_NAMESPACE}" \
+        --patch '{"data":{"allow-snippet-annotations": "true"}}'
+}
+
+EnsureSnippetAnnotationsAreAllowed()
+{
+    SnippetAnnotationsAreAllowed \
+        || AllowSnippetAnnotations
+}
+
 ########################
 # Diagnostic Functions #
 ########################
@@ -1197,6 +1222,7 @@ Default()
     EnsureKustomizeIsInstalled
     EnsureCertManagerIsDeployed
     EnsureExternalDNSIsDeployed
+    EnsureSnippetAnnotationsAreAllowed
     EnsureIronicIsDeployed
     EnsureBareMetalOperatorIsDeployed
     EnsureClusterAPIIsDeployed
