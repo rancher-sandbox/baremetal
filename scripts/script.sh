@@ -79,6 +79,7 @@ ${PROG_WHICH:="which"} \
     ${PROG_TEST:="test"} \
     ${PROG_TPUT:="tput"} \
     ${PROG_TR:="tr"} \
+    ${PROG_TRUE:="true"} \
     ${PROG_UNAME:="uname"} \
     ${PROG_WHOAMI:="whoami"} \
     ${PROG_XARGS:="xargs"} \
