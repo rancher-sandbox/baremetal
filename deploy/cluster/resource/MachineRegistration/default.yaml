@@ -8,6 +8,32 @@ spec:
     rancheros:
       install:
         device: /dev/sda
+    #   tpm:
+    #     no_smbios: true
+    # stages:
+    #   boot:
+    #     - files:
+    #       - path: /root/.ssh/authorized_keys
+    #         content: |
+    #           ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHGYaMrmsmLbv3O6Fj+0kg/U8iY7pcbO9HkbN88OAD+5 colstrom@headnode
+    #         group: 0
+    #         owner: 0
+    #         permissions: 644
+    #       # See https://github.com/openSUSE/sysconfig/blob/master/config/ifcfg.template
+    #       - path: /etc/sysconfig/network/ifcfg-eth2
+    #         content: |
+    #           BOOTPROTO='dhcp'
+    #           STARTMODE='auto'
+    #         group: 0
+    #         owner: 0
+    #         permissions: 600
+    #       - path: /etc/hosts
+    #         content: |
+    #           127.0.0.1   localhost
+    #           172.19.28.2 metal.suse.network
+    #         group: 0
+    #         owner: 0
+    #         permissions: 644
     users:
     - name: root
       passwd: root
