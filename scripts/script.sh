@@ -179,6 +179,7 @@ esac
 : ${KREW_VERSION:="0.4.3"}
 : ${KUSTOMIZE_VERSION:="4.5.5"}
 : ${LINKERD_VERSION:="2.11.2"}
+: ${RANCHEROS_OPERATOR_VERSION:="0.1.0"}
 : ${RANCHER_VERSION:="2.6.5"}
 : ${RKE2_CHANNEL:="stable"}
 
@@ -214,6 +215,7 @@ esac
 : ${KREW_UPSTREAM:="${GITHUB}/kubernetes-sigs/krew/releases/download/v${KREW_VERSION}"}
 : ${KUSTOMIZE_UPSTREAM:="${GITHUB}/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}"}
 : ${LINKERD_UPSTREAM:="${GITHUB}/linkerd/linkerd2/releases/download/${LINKERD_CHANNEL}-${LINKERD_VERSION}"}
+: ${RANCHEROS_OPERATOR_UPSTREAM:="${GITHUB}/rancher-sandbox/rancheros-operator/releases/download/v${RANCHEROS_OPERATOR_VERSION}"}
 
 #########################################
 # Helm-specific Mirroring Configuration #
@@ -259,6 +261,8 @@ esac
 
 : ${LINKERD_CLI:="linkerd2-cli-${LINKERD_CHANNEL}-${LINKERD_VERSION}-${GOOS}-${GOARCH}"}
 : ${LINKERD_CLI_CHECKSUM:="${LINKERD_CLI}.sha256"}
+
+: ${RANCHEROS_OPERATOR_CHART_TARBALL:="rancheros-operator-${RANCHEROS_VERSION}.tgz"}
 
 : ${RKE2_INSTALLER:="${DOWNLOADS}/install-rke2.sh"}
 
@@ -1124,11 +1128,26 @@ EnsureKrewIsInstalled()
         || InstallKrew
 }
 
-InstallRancherOSOperator()
+#######################################
+# rancheros-operator Helper Functions #
+#######################################
+
+RancherOSOperatorIsDeployed()
 {
-    ${PROG_HELM} install rancheros-operator https://github.com/rancher-sandbox/rancheros-operator/releases/download/v0.1.0/rancheros-operator-0.1.0.tgz \
+    HasDeploymentInNamespace "${RANCHEROS_OPERATOR_NAMESPACE}" "${RANCHEROS_OPERATOR_DEPLOYMENT}"
+}
+
+DeployRancherOSOperator()
+{
+    ${PROG_HELM} install rancheros-operator "${RANCHEROS_OPERATOR_UPSTREAM}/${RANCHEROS_OPERATOR_CHART_TARBALL}" \
         --create-namespace \
         --namespace cattle-rancheros-operator-system
+}
+
+EnsureRancherOSOperatorIsDeployed()
+{
+    RancherOSOperatorIsDeployed \
+        || DeployRancherOSOperator
 }
 
 ########################
@@ -1177,6 +1196,7 @@ Default()
     EnsureBareMetalOperatorIsDeployed
     EnsureClusterAPIIsDeployed
     EnsureRancherIsDeployed
+    EnsureRancherOSOperatorIsDeployed
 }
 
 ${PROG_TEST} "${DEBUG:-false}" = "false" || set -o xtrace
