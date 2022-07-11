@@ -868,6 +868,11 @@ EnsureLinkerdIsInstalled()
 # baremetal-operator Helper Functions #
 #######################################
 
+BareMetalOperatorIsDeployed()
+{
+    HasDeploymentInNamespace ${BAREMETAL_OPERATOR_NAMESPACE} ${BAREMETAL_OPERATOR_DEPLOYMENT}
+}
+
 DeployBareMetalOperator()
 {
     EnsureKubeConfigIsInstalled
@@ -876,6 +881,13 @@ DeployBareMetalOperator()
     ${PROG_KUSTOMIZE} build "${REPO_ROOT}/deploy/baremetal-operator" \
         | ${PROG_KUBECTL} "${1:-apply}" -f -
 }
+
+EnsureBareMetalOperatorIsDeployed()
+{
+    BareMetalOperatorIsDeployed \
+        || DeployBareMetalOperator
+}
+
 ###########################
 # Ironic Helper Functions #
 ###########################
@@ -1115,7 +1127,7 @@ Default()
     EnsureKustomizeIsInstalled
     EnsureCertManagerIsDeployed
     EnsureIronicIsDeployed
-    DeployBareMetalOperator
+    EnsureBareMetalOperatorIsDeployed
     DeployClusterAPI
     DeployRancher
 }
