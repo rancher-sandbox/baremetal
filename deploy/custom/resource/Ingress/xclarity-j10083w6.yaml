@@ -6,6 +6,7 @@ metadata:
   namespace: ilo
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
+    external-dns.alpha.kubernetes.io/hostname: j10083w6.ilo.metal.suse.network
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     nginx.ingress.kubernetes.io/configuration-snippet: |
       more_clear_input_headers -t 'application/json' "If-Match";
