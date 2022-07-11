@@ -880,6 +880,11 @@ DeployBareMetalOperator()
 # Ironic Helper Functions #
 ###########################
 
+IronicIsDeployed()
+{
+    HasDeploymentInNamespace "${IRONIC_NAMESPACE}" "${IRONIC_DEPLOYMENT}"
+}
+
 DeployIronic()
 {
     EnsureKubeConfigIsInstalled
@@ -888,6 +893,12 @@ DeployIronic()
     AnnounceLoudly "Deploying Ironic"
     ${PROG_KUSTOMIZE} build "${REPO_ROOT}/deploy/ironic" \
         | ${PROG_KUBECTL} "${1:-apply}" -f -
+}
+
+EnsureIronicIsDeployed()
+{
+    IronicIsDeployed \
+        || DeployIronic
 }
 
 ###############################
@@ -1103,7 +1114,7 @@ Default()
     EnsureHelmIsInstalled
     EnsureKustomizeIsInstalled
     EnsureCertManagerIsDeployed
-    DeployIronic
+    EnsureIronicIsDeployed
     DeployBareMetalOperator
     DeployClusterAPI
     DeployRancher
