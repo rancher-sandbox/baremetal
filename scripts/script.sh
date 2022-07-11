@@ -994,6 +994,11 @@ EnsureClusterAPIIsDeployed()
 # Rancher Helper Functions #
 ############################
 
+RancherIsDeployed()
+{
+    HasDeploymentInNamespace "${RANCHER_NAMESPACE}" "${RANCHER_DEPLOYMENT}"
+}
+
 DeployRancher()
 {
     EnsureHelmIsInstalled
@@ -1008,6 +1013,12 @@ DeployRancher()
         --set hostname="${RANCHER_HOSTNAME}" \
         --set replicas="${RANCHER_REPLICAS}"
     WatchKubernetesRolloutInNamespace "${RANCHER_NAMESPACE}" "deployment/${RANCHER_DEPLOYMENT}"
+}
+
+EnsureRancherIsDeployed()
+{
+    RancherIsDeployed \
+        || DeployRancher
 }
 
 GetRancherBootstrapPassword()
@@ -1165,7 +1176,7 @@ Default()
     EnsureIronicIsDeployed
     EnsureBareMetalOperatorIsDeployed
     EnsureClusterAPIIsDeployed
-    DeployRancher
+    EnsureRancherIsDeployed
 }
 
 ${PROG_TEST} "${DEBUG:-false}" = "false" || set -o xtrace
