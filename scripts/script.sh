@@ -774,17 +774,24 @@ EnsureCmctlIsInstalled()
         || InstallCmctl
 }
 
+CertManagerIsDeployed()
+{
+    HasDeploymentInNamespace "${CERT_MANAGER_NAMESPACE}" "${CERT_MANAGER_DEPLOYMENT}"
+}
+
 DeployCertManager()
 {
-    EnsureHelmIsInstalled
     EnsureKubeConfigIsInstalled
-    EnsureChartRepositoryExists "${CERT_MANAGER_HELM_REPO}" "${CERT_MANAGER_HELM_REPO_URL}"
-    DeployHelmChartIntoNamespace \
-        "${CERT_MANAGER_NAMESPACE}" \
-        "${CERT_MANAGER_HELM_CHART}" \
-        v"${CERT_MANAGER_VERSION}" \
-        "${CERT_MANAGER_HELM_RELEASE}" \
-        --set installCRDs=true
+    EnsureKustomizeIsInstalled
+    AnnounceLoudly "Deploying cert-manager"
+    ${PROG_KUSTOMIZE} build "${REPO_ROOT}/deploy/cert-manager" \
+        | ${PROG_KUBECTL} "${1:-apply}" -f -
+}
+
+EnsureCertManagerIsDeployed()
+{
+    CertManagerIsDeployed \
+        || DeployCertManager
 }
 
 #################################
@@ -1092,8 +1099,8 @@ Default()
     EnsureRKE2IsInstalled
     EnsureKubeConfigIsInstalled
     EnsureHelmIsInstalled
-    DeployCertManager
     EnsureKustomizeIsInstalled
+    EnsureCertManagerIsDeployed
     DeployIronic
     DeployBareMetalOperator
     DeployClusterAPI
