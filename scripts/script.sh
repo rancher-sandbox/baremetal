@@ -267,6 +267,22 @@ esac
 ################################
 # You probably shouldn't change any of these things.
 
+: ${BAREMETAL_OPERATOR_DEPLOYMENT:="baremetal-operator-controller-manager"}
+: ${BAREMETAL_OPERATOR_NAMESPACE:="baremetal-operator-system"}
+
+: ${CERT_MANAGER_DEPLOYMENT:="cert-manager"}
+
+: ${CLUSTER_API_BOOTSTRAP_DEPLOYMENT:="capi-kubeadm-bootstrap-controller-manager"}
+: ${CLUSTER_API_BOOTSTRAP_NAMESPACE:="capi-kubeadm-bootstrap-system"}
+: ${CLUSTER_API_CONTROL_PLANE_DEPLOYMENT:="capi-kubeadm-control-plane-controller-manager"}
+: ${CLUSTER_API_CONTROL_PLANE_NAMESPACE:="capi-kubeadm-control-plane-system"}
+: ${CLUSTER_API_CORE_DEPLOYMENT:="capi-controller-manager"}
+: ${CLUSTER_API_CORE_NAMESPACE:="capi-system"}
+: ${CLUSTER_API_INFRASTRUCTURE_DEPLOYMENT:="capm3-controller-manager"}
+: ${CLUSTER_API_INFRASTRUCTURE_NAMESPACE:="${IRONIC_NAMESPACE}"}
+
+: ${EXTERNAL_DNS_DEPLOYMENT:="external-dns"}
+
 : ${IRONIC_CONTAINER_DNSMASQ:="ironic-dnsmasq"}
 : ${IRONIC_DEPLOYMENT:="${IRONIC_NAMESPACE_PREFIX}-ironic"}
 : ${IRONIC_HEALTH_CHECK_PATH:="boot.ipxe"}
@@ -274,6 +290,11 @@ esac
 : ${RANCHER_NAMESPACE:="cattle-system"}
 : ${RANCHER_BOOTSTRAP_SECRET:="bootstrap-secret"}
 
+: ${RANCHEROS_OPERATOR_NAMESPACE:="cattle-rancheros-operator-system"}
+: ${RANCHEROS_OPERATOR_DEPLOYMENT:="rancheros-operator"}
+
+: ${RKE2_INGRESS_CONFIG_MAP:="rke2-ingress-nginx-controller"}
+: ${RKE2_INGRESS_NAMESPACE:="kube-system"}
 : ${RKE2_KUBECONFIG:="/etc/rancher/rke2/rke2.yaml"}
 : ${RKE2_TYPE:="server"}
 : ${RKE2_SERVICE:="rke2-${RKE2_TYPE}.service"}
