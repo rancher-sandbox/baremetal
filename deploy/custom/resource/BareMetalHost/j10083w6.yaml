@@ -5,7 +5,11 @@ metadata:
   name: j10083w6
 spec:
   online: true
-  bootMACAddress: 7c:d3:0a:5b:b4:7d
+  bootMACAddress: 7c:d3:0a:5b:b4:78 # eth0
+  # bootMACAddress: 7c:d3:0a:5b:b4:79 # eth1
+  # bootMACAddress: 7c:d3:0a:5b:b4:7a # eth2
+  # bootMACAddress: 7c:d3:0a:5b:b4:7b # eth3
+  # bootMACAddress: 7c:d3:0a:5b:b4:7d # BMC
   bootMode: legacy
   bmc:
     address: redfish-virtualmedia://j10083w6.ilo.metal.suse.network/redfish/v1/Systems/1

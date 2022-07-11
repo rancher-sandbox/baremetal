@@ -5,10 +5,10 @@ metadata:
   name: 2m25300d20
 spec:
   online: true
-  # bootMACAddress: 50:65:f3:6e:42:74 # 1gb-port1
+  bootMACAddress: 50:65:f3:6e:42:74 # 1gb-port1
   # bootMACAddress: 50:65:f3:6e:42:75 # 1gb-port2
   # bootMACAddress: 50:65:f3:6e:42:76 # iLO
-  bootMACAddress: 8c:dc:d4:0f:10:98 # 10gb-port1
+  # bootMACAddress: 8c:dc:d4:0f:10:98 # 10gb-port1
   # bootMACAddress: 8c:dc:d4:0f:10:9c # 10gb-port2
   bootMode: legacy
   bmc:
