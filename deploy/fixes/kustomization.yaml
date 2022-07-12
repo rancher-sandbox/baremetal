@@ -1,6 +1,6 @@
-namespace: ilo
+namespace: fixes
 resources:
-  - resource/Namespace/ilo.yaml
+  - resource/Namespace/fixes.yaml
   - resource/Secret/dns-provider-credentials.yaml
   - resource/Issuer/letsencrypt-prod.yaml
 

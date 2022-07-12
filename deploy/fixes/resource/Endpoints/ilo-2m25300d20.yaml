@@ -3,7 +3,6 @@ kind: Endpoints
 apiVersion: v1
 metadata:
   name: ilo-2m25300d20
-  namespace: ilo
 subsets:
   - addresses:
       - ip: 172.19.28.51

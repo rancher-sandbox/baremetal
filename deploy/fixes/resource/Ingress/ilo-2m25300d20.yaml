@@ -2,11 +2,10 @@
 kind: Ingress
 apiVersion: networking.k8s.io/v1
 metadata:
-  name: ilo-2m25300d1n
-  namespace: ilo
+  name: ilo-2m25300d20
   annotations:
     cert-manager.io/issuer: letsencrypt-prod
-    external-dns.alpha.kubernetes.io/hostname: 2m25300d1n.ilo.metal.suse.network
+    external-dns.alpha.kubernetes.io/hostname: 2m25300d20.ilo.metal.suse.network
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     nginx.ingress.kubernetes.io/proxy-connect-timeout: "300"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
@@ -17,27 +16,19 @@ metadata:
 spec:
   tls:
     - hosts:
-        - 2m25300d1n.ilo.metal.suse.network
-      secretName: 2m25300d1n-certificate
-  # defaultBackend:
-  #   service:
-  #     name: ilo-2m25300d1n
-  #     port:
-  #       number: 443
-  #   resource:
-  #     kind: Service
-  #     name: ilo-2m25300d1n
+        - 2m25300d20.ilo.metal.suse.network
+      secretName: 2m25300d20-certificate
   rules:
-    - host: 2m25300d1n.ilo.metal.suse.network
+    - host: 2m25300d20.ilo.metal.suse.network
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
-              service:
-                name: ilo-2m25300d1n
-                port:
-                  number: 443
               # resource:
               #   kind: Service
-              #   name: ilo-2m25300d1n
+              #   name: ilo-2m25300d20
+              service:
+                name: ilo-2m25300d20
+                port:
+                  number: 443

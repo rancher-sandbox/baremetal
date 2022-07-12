@@ -3,7 +3,6 @@ kind: Service
 apiVersion: v1
 metadata:
   name: media
-  namespace: ilo
 spec:
   ports:
     - name: http

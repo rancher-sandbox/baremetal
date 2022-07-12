@@ -2,8 +2,7 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: ilo-2m25300d3h
-  namespace: ilo
+  name: xclarity-j10083w6
 spec:
   ports:
     - name: https

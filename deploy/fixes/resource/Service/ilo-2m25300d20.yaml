@@ -2,8 +2,7 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: ilo-2m25300d1n
-  namespace: ilo
+  name: ilo-2m25300d20
 spec:
   ports:
     - name: https
