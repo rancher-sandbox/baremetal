@@ -3,7 +3,7 @@ kind: Deployment
 apiVersion: apps/v1
 metadata:
   name: media
-  namespace: ilo
+  namespace: media
   labels:
     app: nginx
 spec:

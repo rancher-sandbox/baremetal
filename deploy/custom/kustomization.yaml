@@ -4,13 +4,6 @@ resources:
   - resource/Secret/dns-provider-credentials.yaml
   - resource/Issuer/letsencrypt-prod.yaml
 
-  - resource/StorageClass/local.yaml
-  - resource/PersistentVolume/media.yaml
-  - resource/PersistentVolumeClaim/media.yaml
-  - resource/Deployment/media.yaml
-  - resource/Service/media.yaml
-  - resource/Ingress/media.yaml
-
   - resource/Service/ilo-2m25300d1n.yaml
   - resource/Service/ilo-2m25300d20.yaml
   - resource/Service/ilo-2m25300d3h.yaml

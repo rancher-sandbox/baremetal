@@ -1,0 +1,12 @@
+namespace: media
+resources:
+  - resource/Namespace/ilo.yaml
+  - resource/Secret/dns-provider-credentials.yaml
+  - resource/Issuer/letsencrypt-prod.yaml
+
+  - resource/StorageClass/local.yaml
+  - resource/PersistentVolume/media.yaml
+  - resource/PersistentVolumeClaim/media.yaml
+  - resource/Deployment/media.yaml
+  - resource/Service/media.yaml
+  - resource/Ingress/media.yaml
