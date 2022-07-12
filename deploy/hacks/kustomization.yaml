@@ -1,4 +1,4 @@
-namespace: fixes
+namespace: hacks
 resources:
   - resource/Namespace/fixes.yaml
   - resource/Secret/dns-provider-credentials.yaml
