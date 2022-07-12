@@ -29,5 +29,6 @@ ${PROG_WHICH:="which"} \
 ${PROG_TEST} "${DEBUG:-false}" = "false" || set -o xtrace
 
 ${PROG_GOMPLATE} \
+    --verbose \
     --input-dir="${TEMPLATES_DIR}" \
     --output-map="${DEPLOY_DIR}/{{ .in | strings.TrimSuffix \".gomplate\" }}"
