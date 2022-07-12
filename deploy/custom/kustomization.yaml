@@ -32,7 +32,3 @@ resources:
   - resource/Secret/2m25300d3h-user-data.yaml
   - resource/Secret/j10083w6-credentials.yaml
   - resource/Secret/j10083w6-user-data.yaml
-  - resource/BareMetalHost/2m25300d1n.yaml
-  - resource/BareMetalHost/2m25300d20.yaml
-  - resource/BareMetalHost/2m25300d3h.yaml
-  - resource/BareMetalHost/j10083w6.yaml
