@@ -3,7 +3,6 @@ kind: Issuer
 apiVersion: cert-manager.io/v1
 metadata:
   name: letsencrypt-prod
-  namespace: media
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory

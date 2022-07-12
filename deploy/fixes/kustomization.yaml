@@ -16,8 +16,3 @@ resources:
   - resource/Ingress/ilo-2m25300d20.yaml
   - resource/Ingress/ilo-2m25300d3h.yaml
   - resource/Ingress/xclarity-j10083w6.yaml
-
-  - resource/Secret/2m25300d1n-credentials.yaml
-  - resource/Secret/2m25300d20-credentials.yaml
-  - resource/Secret/2m25300d3h-credentials.yaml
-  - resource/Secret/j10083w6-credentials.yaml
