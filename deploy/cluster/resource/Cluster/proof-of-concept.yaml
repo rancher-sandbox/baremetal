@@ -1,0 +1,7 @@
+kind: Cluster
+apiVersion: provisioning.cattle.io/v1
+metadata:
+  name: proof-of-concept
+spec:
+  # See https://github.com/k3s-io/k3s/tags
+  kubernetesVersion: v1.23.7+k3s1

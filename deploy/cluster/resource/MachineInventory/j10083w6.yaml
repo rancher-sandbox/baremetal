@@ -1,0 +1,10 @@
+---
+kind: MachineInventory
+apiVersion: rancheros.cattle.io/v1
+metadata:
+  name: j10083w6
+spec:
+  clusterName: proof-of-concept
+  config:
+    role: agent
+  tpmHash: a545e2417e88ae4a630d5570c9ed2e2e95e5bb5e738be70bf68fdc250c254080

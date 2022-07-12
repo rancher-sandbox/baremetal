@@ -1,0 +1,10 @@
+---
+kind: MachineInventory
+apiVersion: rancheros.cattle.io/v1
+metadata:
+  name: 2m25300d3h
+spec:
+  clusterName: proof-of-concept
+  config:
+    role: server
+  tpmHash: a120416a6c3a2cdd95ebe451f3d08efe4cd88f25f47327fb0176dd1f8a3c5cf0
