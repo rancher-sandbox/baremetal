@@ -1,6 +1,6 @@
 namespace: media
 resources:
-  - resource/Namespace/ilo.yaml
+  - resource/Namespace/media.yaml
   - resource/Secret/dns-provider-credentials.yaml
   - resource/Issuer/letsencrypt-prod.yaml
 
