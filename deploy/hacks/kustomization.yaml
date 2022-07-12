@@ -1,6 +1,6 @@
 namespace: hacks
 resources:
-  - resource/Namespace/fixes.yaml
+  - resource/Namespace/hacks.yaml
   - resource/Secret/dns-provider-credentials.yaml
   - resource/Issuer/letsencrypt-prod.yaml
 
