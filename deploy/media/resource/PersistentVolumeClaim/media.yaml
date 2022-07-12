@@ -3,7 +3,6 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: media
-  namespace: media
 spec:
   storageClassName: local
   accessModes:

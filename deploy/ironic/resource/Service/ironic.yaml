@@ -3,7 +3,6 @@ kind: Service
 apiVersion: v1
 metadata:
   name: ironic
-  namespace: capm3-system
 spec:
   ports:
     - name: httpd
