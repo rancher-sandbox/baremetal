@@ -1,2 +1,6 @@
 resources:
   - resource/MachineRegistration/default.yaml
+  - resource/BareMetalHost/2m25300d1n.yaml
+  - resource/BareMetalHost/2m25300d20.yaml
+  - resource/BareMetalHost/2m25300d3h.yaml
+  - resource/BareMetalHost/j10083w6.yaml
