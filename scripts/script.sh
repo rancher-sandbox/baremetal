@@ -683,13 +683,13 @@ EnsureKubernetesNamespaceExists()
 HasDeploymentInNamespace()
 {
     HasKubernetesNamespace "${1}" \
-        && ${PROG_KUBECTL} get "deployment/${2}" --namespace "${1}" 1>/dev/null 2>/dev/null
+        && ${PROG_KUBECTL} get "Deployment/${2}" --namespace "${1}" 1>/dev/null 2>/dev/null
 }
 
-WatchKubernetesRolloutInNamespace()
+WatchDeploymentInNamespace()
 {
-    EnsureKubeConfigIsInstalled
-    ${PROG_KUBECTL} -n "${1}" rollout status "${2}"
+    HasDeploymentInNamespace "${1}" "${2}" \
+        && ${PROG_KUBECTL} rollout status "Deployment/${2}" --namespace "${1}"
 }
 
 #########################
@@ -814,6 +814,12 @@ DeployCertManager()
     AnnounceLoudly "Deploying cert-manager"
     ${PROG_KUSTOMIZE} build "${REPO_ROOT}/deploy/cert-manager" \
         | ${PROG_KUBECTL} "${1:-apply}" -f -
+    WaitForCertManager
+}
+
+WaitForCertManager()
+{
+    WatchDeploymentInNamespace "${CERT_MANAGER_NAMESPACE}" "${CERT_MANAGER_DEPLOYMENT}"
 }
 
 EnsureCertManagerIsDeployed()
@@ -838,6 +844,12 @@ DeployExternalDNS()
     AnnounceLoudly "Deploying external-dns"
     ${PROG_KUSTOMIZE} build "${REPO_ROOT}/deploy/external-dns" \
         | ${PROG_KUBECTL} "${1:-apply}" -f -
+    WaitForExternalDNS
+}
+
+WaitForExternalDNS()
+{
+    WatchDeploymentInNamespace "${EXTERNAL_DNS_NAMESPACE}" "${EXTERNAL_DNS_DEPLOYMENT}"
 }
 
 EnsureExternalDNSIsDeployed()
@@ -899,7 +911,7 @@ EnsureLinkerdIsInstalled()
 
 BareMetalOperatorIsDeployed()
 {
-    HasDeploymentInNamespace ${BAREMETAL_OPERATOR_NAMESPACE} ${BAREMETAL_OPERATOR_DEPLOYMENT}
+    HasDeploymentInNamespace "${BAREMETAL_OPERATOR_NAMESPACE}" "${BAREMETAL_OPERATOR_DEPLOYMENT}"
 }
 
 DeployBareMetalOperator()
@@ -909,6 +921,12 @@ DeployBareMetalOperator()
     AnnounceLoudly "Deploying baremetal-operator"
     ${PROG_KUSTOMIZE} build "${REPO_ROOT}/deploy/baremetal-operator" \
         | ${PROG_KUBECTL} "${1:-apply}" -f -
+    WaitForBareMetalOperator
+}
+
+WaitForBareMetalOperator()
+{
+    WatchDeploymentInNamespace "${BAREMETAL_OPERATOR_NAMESPACE}" "${BAREMETAL_OPERATOR_DEPLOYMENT}"
 }
 
 EnsureBareMetalOperatorIsDeployed()
@@ -934,6 +952,12 @@ DeployIronic()
     AnnounceLoudly "Deploying Ironic"
     ${PROG_KUSTOMIZE} build "${REPO_ROOT}/deploy/ironic" \
         | ${PROG_KUBECTL} "${1:-apply}" -f -
+    WaitForIronic
+}
+
+WaitForIronic()
+{
+    WatchDeploymentInNamespace "${IRONIC_NAMESPACE}" "${IRONIC_DEPLOYMENT}"
 }
 
 EnsureIronicIsDeployed()
@@ -990,6 +1014,15 @@ DeployClusterAPI()
         --bootstrap "kubeadm:v${CLUSTER_API_VERSION}" \
         --control-plane "kubeadm:v${CLUSTER_API_VERSION}" \
         --infrastructure "metal3:v${BAREMETAL_OPERATOR_VERSION}"
+    WaitForClusterAPI
+}
+
+WaitForClusterAPI()
+{
+    WatchDeploymentInNamespace "${CLUSTER_API_CORE_NAMESPACE}"           "${CLUSTER_API_CORE_DEPLOYMENT}"
+    WatchDeploymentInNamespace "${CLUSTER_API_BOOTSTRAP_NAMESPACE}"      "${CLUSTER_API_BOOTSTRAP_DEPLOYMENT}"
+    WatchDeploymentInNamespace "${CLUSTER_API_CONTROL_PLANE_NAMESPACE}"  "${CLUSTER_API_CONTROL_PLANE_DEPLOYMENT}"
+    WatchDeploymentInNamespace "${CLUSTER_API_INFRASTRUCTURE_NAMESPACE}" "${CLUSTER_API_INFRASTRUCTURE_DEPLOYMENT}"
 }
 
 EnsureClusterAPIIsDeployed()
@@ -1020,7 +1053,12 @@ DeployRancher()
         "${RANCHER_HELM_RELEASE}" \
         --set hostname="${RANCHER_HOSTNAME}" \
         --set replicas="${RANCHER_REPLICAS}"
-    WatchKubernetesRolloutInNamespace "${RANCHER_NAMESPACE}" "deployment/${RANCHER_DEPLOYMENT}"
+    WaitForRancher
+}
+
+WaitForRancher()
+{
+    WatchDeploymentInNamespace "${RANCHER_NAMESPACE}" "${RANCHER_DEPLOYMENT}"
 }
 
 EnsureRancherIsDeployed()
@@ -1146,6 +1184,12 @@ DeployRancherOSOperator()
     ${PROG_HELM} install rancheros-operator "${RANCHEROS_OPERATOR_UPSTREAM}/${RANCHEROS_OPERATOR_CHART_TARBALL}" \
         --create-namespace \
         --namespace cattle-rancheros-operator-system
+    WaitForRancherOSOperator
+}
+
+WaitForRancherOSOperator()
+{
+    WatchDeploymentInNamespace "${RANCHEROS_OPERATOR_NAMESPACE}" "${RANCHEROS_OPERATOR_DEPLOYMENT}"
 }
 
 EnsureRancherOSOperatorIsDeployed()
