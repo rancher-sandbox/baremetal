@@ -1253,7 +1253,7 @@ EnsureSnippetAnnotationsAreAllowed()
 
 ShowIronicDHCP()
 {
-    ${PROG_KUBECTL} exec "deployment/${IRONIC_DEPLOYMENT}" \
+    ${PROG_KUBECTL} exec "Deployment/${IRONIC_DEPLOYMENT}" \
         -n "${IRONIC_NAMESPACE}" \
         -c "${IRONIC_CONTAINER_DNSMASQ}" \
         -- cat /var/lib/dnsmasq/dnsmasq.leases
