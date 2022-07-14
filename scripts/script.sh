@@ -292,6 +292,9 @@ esac
 : ${IRONIC_DEPLOYMENT:="${IRONIC_NAMESPACE_PREFIX}-ironic"}
 : ${IRONIC_HEALTH_CHECK_PATH:="boot.ipxe"}
 
+: ${MEDIA_NAMESPACE:="media"}
+: ${MEDIA_DEPLOYMENT:="media"}
+
 : ${RANCHER_NAMESPACE:="cattle-system"}
 : ${RANCHER_BOOTSTRAP_SECRET:="bootstrap-secret"}
 
@@ -1192,6 +1195,33 @@ EnsureRancherOSOperatorIsDeployed()
         || DeployRancherOSOperator
 }
 
+##########################
+# Media Helper Functions #
+##########################
+
+MediaIsDeployed()
+{
+    HasDeploymentInNamespace "${MEDIA_NAMESPACE}" "${MEDIA_DEPLOYMENT}"
+}
+
+DeployMedia()
+{
+    ${PROG_KUSTOMIZE} build "${REPO_ROOT}/deploy/media" \
+        | ${PROG_KUBECTL} "${1:-apply}" -f -
+    WaitForMedia
+}
+
+WaitForMedia()
+{
+    WatchDeploymentInNamespace "${MEDIA_NAMESPACE}" "${MEDIA_DEPLOYMENT}"
+}
+
+EnsureMediaIsDeployed()
+{
+    MediaIsDeployed \
+        || DeployMedia
+}
+
 ############################
 # Ingress Helper Functions #
 ############################
@@ -1261,6 +1291,7 @@ Default()
     EnsureCertManagerIsDeployed
     EnsureExternalDNSIsDeployed
     EnsureSnippetAnnotationsAreAllowed
+    EnsureMediaIsDeployed
     EnsureIronicIsDeployed
     EnsureBareMetalOperatorIsDeployed
     EnsureClusterAPIIsDeployed
