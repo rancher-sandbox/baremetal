@@ -175,14 +175,14 @@ esac
 : ${CLUSTERCTL_VERSION:="${CLUSTER_API_VERSION}"}
 : ${EXTERNAL_DNS_HELM_CHART_VERSION:="6.5.6"}
 # : ${EXTERNAL_DNS_VERION:="0.12.0"}
-: ${HELM_VERSION:="3.9.0"}
+: ${HELM_VERSION:="3.8.2"}
 : ${K9S_VERSION:="0.25.18"}
 : ${KREW_VERSION:="0.4.3"}
 : ${KUSTOMIZE_VERSION:="4.5.5"}
 : ${LINKERD_VERSION:="2.11.2"}
 : ${RANCHEROS_OPERATOR_VERSION:="0.1.0"}
 : ${RANCHER_VERSION:="2.6.5"}
-: ${RKE2_CHANNEL:="stable"}
+: ${RKE2_CHANNEL:="v1.23"}
 
 : ${BAREMETAL_OPERATOR_TAG:="capm3-v${BAREMETAL_OPERATOR_VERSION}"}
 : ${LINKERD_CHANNEL="stable"}
@@ -1042,17 +1042,11 @@ RancherIsDeployed()
 
 DeployRancher()
 {
-    EnsureHelmIsInstalled
     EnsureKubeConfigIsInstalled
-    # EnsureKubernetesNamespaceExists "${RANCHER_NAMESPACE}"
-    EnsureChartRepositoryExists "${RANCHER_HELM_REPO}" "${RANCHER_HELM_REPO_URL}"
-    DeployHelmChartIntoNamespace \
-        "${RANCHER_NAMESPACE}" \
-        "${RANCHER_HELM_CHART}" \
-        "${RANCHER_VERSION}" \
-        "${RANCHER_HELM_RELEASE}" \
-        --set hostname="${RANCHER_HOSTNAME}" \
-        --set replicas="${RANCHER_REPLICAS}"
+    EnsureKustomizeIsInstalled
+    EnsureKubernetesNamespaceExists "${RANCHER_NAMESPACE}"
+    ${PROG_KUSTOMIZE} build --enable-helm "${REPO_ROOT}/deploy/rancher" \
+        | ${PROG_KUBECTL} "${1:-apply}" -f -
     WaitForRancher
 }
 
