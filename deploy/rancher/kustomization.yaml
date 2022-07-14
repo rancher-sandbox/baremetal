@@ -1,0 +1,23 @@
+namespace: cattle-system
+helmCharts:
+  - name: rancher
+    version: 2.6.6
+    repo: https://releases.rancher.com/server-charts/stable
+    releaseName: rancher
+    namespace: cattle-system
+    includeCRDs: true
+    valuesInline:
+      hostname: metal.suse.network
+      replicas: 3
+      ingress:
+        tls:
+          source: letsEncrypt
+resources:
+  - resource/Secret/dns-provider-credentials.yaml
+patches:
+  - path: patch/Issuer/rancher.yaml
+    target:
+      group: cert-manager.io
+      version: v1
+      kind: Issuer
+      name: rancher

@@ -1,0 +1,2 @@
+resources:
+  - resource/Namespace/cattle-system.yaml

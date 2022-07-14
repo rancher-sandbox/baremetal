@@ -1,0 +1,8 @@
+- op: replace
+  path: /spec/acme/solvers/0
+  value:
+    dns01:
+      cloudflare:
+        apiTokenSecretRef:
+          name: dns-provider-credentials
+          key: cloudflare_api_token
