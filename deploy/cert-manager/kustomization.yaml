@@ -1,5 +1,4 @@
-namespace: cert-manager
 resources:
-  - https://github.com/cert-manager/cert-manager/releases/download/v1.8.1/cert-manager.yaml
-  - resource/Secret/dns-provider-credentials.yaml
-  - resource/ClusterIssuer/letsencrypt-prod.yaml
+  - https://github.com/cert-manager/cert-manager/releases/download/v1.8.2/cert-manager.yaml
+  # - resource/Secret/dns-provider-credentials.yaml
+  # - resource/ClusterIssuer/letsencrypt-prod.yaml
