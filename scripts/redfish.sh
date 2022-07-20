@@ -32,7 +32,9 @@ ${PROG_WHICH:="which"} \
     ${PROG_FALSE:="false"} \
     ${PROG_INSTALL:="install"} \
     ${PROG_JQ:="jq"} \
+    ${PROG_PRINTF:="printf"} \
     ${PROG_RM:="rm"} \
+    ${PROG_SORT:="sort"} \
     ${PROG_TEST:="test"} \
     ${PROG_TR:="tr"} \
     ${PROG_TRUE:="true"} \
@@ -57,7 +59,7 @@ ${PROG_WHICH:="which"} \
 # API Discovery #
 #################
 
-CallAPI()
+CallUnauthenticated()
 {
     uri="${1}"
     shift 1
@@ -69,35 +71,141 @@ CallAPI()
         "${@:-}"
 }
 
+CallAuthenticated()
+{
+    uri="${1}"
+    shift 1
+    CallUnauthenticated "${uri}" \
+        --header "X-Auth-Token: ${AUTH_TOKEN:=$(AuthToken)}" \
+        "${@:-}"
+}
+
 QueryJSON()
 {
     ${PROG_JQ} -e -r "${@:-.}"
 }
 
-: ${REDFISH_API:="/redfish/"}
+###########################
+# API Discovery Functions #
+###########################
+# Realistically, a shell script probably isn't ideal for this. But,
+# it'll have to do for now. Better to have something that works, than
+# to have nothing at all, right?
 
-case "${API_DISCOVERY}" in
-    false)
-        : ${V1_API:="/redfish/v1/"}
-        : ${MANAGERS_API:="/redfish/v1/Managers/"}
-        : ${SESSION_SERVICE:="/redfish/v1/SessionService/"}
-        : ${SESSIONS_API:="/redfish/v1/SessionService/Sessions/"}
-        : ${SYSTEMS_API:="/redfish/v1/Systems/"}
-        ;;
-    *)
-        : ${V1_API:=$(CallAPI "${REDFISH_API}" | QueryJSON ".v1")}
-        : ${MANAGERS_API:=$(CallAPI "${V1_API}" | QueryJSON '.Managers["@odata.id"]')}
-        : ${SESSION_SERVICE:=$(CallAPI "${V1_API}" | QueryJSON '.SessionService["@odata.id"]')}
-        : ${SESSIONS_API:=$(CallAPI "${SESSION_SERVICE}" | QueryJSON '.Sessions["@odata.id"]')}
-        : ${SYSTEMS_API:=$(CallAPI "${V1_API}" | QueryJSON '.Systems["@odata.id"]')}
-        ;;
-esac
+URI()
+{
+    : ${REDFISH_BASE_URI:="/redfish/"}
 
-: ${VIRTUAL_MEDIA:="/redfish/v1/Managers/1/VirtualMedia/"}
+    ${PROG_PRINTF} "%s" "${REDFISH_BASE_URI}"
+}
 
-####################
-# Helper Functions #
-####################
+API()
+{
+    CallUnauthenticated "$(URI)" "${@:-}"
+}
+
+V1URI()
+{
+    if ${PROG_TEST} "${API_DISCOVERY}" = "false"
+    then : ${REDFISH_V1_URI:="/redfish/v1/"}
+    else : ${REDFISH_V1_URI:=$(API | QueryJSON ".v1")}
+    fi
+
+    ${PROG_PRINTF} "%s" "${REDFISH_V1_URI}"
+}
+
+V1API()
+{
+    CallUnauthenticated "$(V1URI)" "${@:-}"
+}
+
+################################
+# Systems API Helper Functions #
+################################
+
+SystemsURI()
+{
+    if ${PROG_TEST} "${API_DISCOVERY}" = "false"
+    then : ${REDFISH_SYSTEMS_URI:="/redfish/v1/Systems/"}
+    else : ${REDFISH_SYSTEMS_URI:=$(V1API | QueryJSON '.Systems["@odata.id"]')}
+    fi
+
+    ${PROG_PRINTF} "%s" "${REDFISH_SYSTEMS_URI}"
+}
+
+SystemsAPI()
+{
+    CallAuthenticated "$(SystemsURI)" "${@:-}"
+}
+
+SystemURI()
+{
+    if ${PROG_TEST} "${API_DISCOVERY}" = "false"
+    then : ${REDFISH_SYSTEM_URI:="/redfish/v1/Systems/1/"}
+    else : ${REDFISH_SYSTEM_URI:=$(SystemsAPI | QueryJSON '.Members[0] | .["@odata.id"]')}
+    fi
+
+    ${PROG_PRINTF} "%s" "${REDFISH_SYSTEM_URI}"
+}
+
+SystemAPI()
+{
+    CallAuthenticated "$(SystemURI)" "${@:-}"
+}
+
+
+SessionServiceURI()
+{
+    if ${PROG_TEST} "${API_DISCOVERY}" = "false"
+    then : ${REDFISH_SESSION_SERVICE_URI:="/redfish/v1/SessionService/"}
+    else : ${REDFISH_SESSION_SERVICE_URI:=$(V1API | QueryJSON '.SessionService["@odata.id"]')}
+    fi
+
+    ${PROG_PRINTF} "%s" "${REDFISH_SESSION_SERVICE_URI}"
+}
+
+SessionServiceAPI()
+{
+    CallUnauthenticated "$(SessionServiceURI)" "${@:-}"
+}
+
+SessionsURI()
+{
+    if ${PROG_TEST} "${API_DISCOVERY}" = "false"
+    then : ${REDFISH_SESSIONS_URI:="/redfish/v1/SessionService/Sessions/"}
+    else : ${REDFISH_SESSIONS_URI:=$(SessionServiceAPI | QueryJSON '.Sessions["@odata.id"]')}
+    fi
+
+    ${PROG_PRINTF} "%s" "${REDFISH_SESSIONS_URI}"
+}
+
+SessionsAPI()
+{
+    CallAuthenticated "$(SessionsURI)" "${@:-}"
+}
+
+CanUseSessions() {
+    SessionServiceAPI \
+        | QueryJSON '.Status | [.State, .Health] | @tsv' \
+        | ${PROG_AWK} '
+            BEGIN { status = 1 }
+            ($1 == "Enabled") && ($2 == "OK") { status = 0 }
+            END { exit status }'
+}
+
+# URI()
+# {
+#     if ${PROG_TEST} "${API_DISCOVERY}" = "false"
+#     then :
+#     else :
+#     fi
+
+#     ${PROG_PRINTF} "%s" "${REDFISH__URI}"
+# }
+
+############################
+# Payload Helper Functions #
+############################
 
 EmptyObject()
 {
@@ -106,33 +214,9 @@ EmptyObject()
 EOF
 }
 
-ParseDateTime()
-{
-    ${PROG_DATE} --date="${1}" +%s
-}
-
-Now()
-{
-    ${PROG_DATE} +%s
-}
-
-CanUseSessions() {
-    CallAPI "${SESSION_SERVICE}" \
-        | QueryJSON '.Status | [.State, .Health] | @tsv' \
-        | ${PROG_AWK} '
-            BEGIN { status = 1 }
-            ($1 == "Enabled") && ($2 == "OK") { status = 0 }
-            END { exit status }'
-}
-
-CallAuthenticatedAPI()
-{
-    uri="${1}"
-    shift 1
-    CallAPI "${uri}" \
-        --header "X-Auth-Token: ${AUTH_TOKEN:=$(AuthToken)}" \
-        "${@:-}"
-}
+############################
+# Session Helper Functions #
+############################
 
 AuthPayload()
 {
@@ -144,7 +228,7 @@ AuthPayload()
 
 Login()
 {
-    CallAPI "${SESSIONS_API}" \
+    CallUnauthenticated $(SessionsURI) \
         --request POST \
         --data "$(AuthPayload)" \
         --output /dev/null \
@@ -168,7 +252,7 @@ AuthToken()
         | ${PROG_TR} -d "[[:space:]]"
 }
 
-CurrentSession()
+CurrentSessionURI()
 {
     LoginHeaders \
         | ${PROG_AWK} -F ": " '\
@@ -178,23 +262,33 @@ CurrentSession()
         | ${PROG_TR} -d "[[:space:]]"
 }
 
-Session()
+SessionInfo()
 {
     ${PROG_TEST} -f "${SESSION_INFO}" \
-        || CallAuthenticatedAPI "$(CurrentSession)" \
+        || CallAuthenticated "$(CurrentSessionURI)" \
             --output "${SESSION_INFO}"
     ${PROG_AWK} '{ print }' "${SESSION_INFO}"
 }
 
+ParseDateTime()
+{
+    ${PROG_DATE} --date="${1}" +%s
+}
+
+Now()
+{
+    ${PROG_DATE} +%s
+}
+
 SessionExpiry()
 {
-    ParseDateTime "$(Session | QueryJSON '.Oem.Hp.UserExpires')"
+    ParseDateTime "$(SessionInfo | QueryJSON '.Oem.Hp.UserExpires')"
 }
 
 Logout()
 {
     ${PROG_TEST} -f "${SESSION_HEADERS}" \
-        && CallAuthenticatedAPI "$(CurrentSession)" \
+        && CallAuthenticated "$(CurrentSessionURI)" \
             --request DELETE
 }
 
@@ -214,34 +308,114 @@ CleanupSession()
     ${PROG_RM} -f "${SESSION_INFO}"
 }
 
+#################################
+# Managers API Helper Functions #
+#################################
+
+ManagersURI()
+{
+    if ${PROG_TEST} "${API_DISCOVERY}" = "false"
+    then : ${REDFISH_MANAGERS_URI:="/redfish/v1/Managers/"}
+    else : ${REDFISH_MANAGERS_URI:=$(V1API | QueryJSON '.Managers["@odata.id"]')}
+    fi
+
+    ${PROG_PRINTF} "%s" "${REDFISH_MANAGERS_URI}"
+}
+
+ManagersAPI()
+{
+    CallAuthenticated "$(ManagersURI)" "${@:-}"
+}
+
+ManagerURI()
+{
+    if ${PROG_TEST} "${API_DISCOVERY}" = "false"
+    then : ${REDFISH_MANAGER_URI:="/redfish/v1/Managers/1/"}
+    else : ${REDFISH_MANAGER_URI:=$(ManagersAPI | QueryJSON '.Members[0] | .["@odata.id"]')}
+    fi
+
+    ${PROG_PRINTF} "%s" "${REDFISH_MANAGER_URI}"
+}
+
+ManagerAPI()
+{
+    CallAuthenticated "$(ManagerURI)" "${@:-}"
+}
+
 ##################################
 # Virtual Media Helper Functions #
 ##################################
 
-VirtualMediaMembers()
+VirtualMediaManagerURI()
 {
-    CallAuthenticatedAPI "${VIRTUAL_MEDIA}" \
-        | QueryJSON '.Members[] | .["@odata.id"]'
+    if ${PROG_TEST} "${API_DISCOVERY}" = "false"
+    then : ${REDFISH_VIRTUAL_MEDIA_MANAGER_URI:="/redfish/v1/Managers/1/VirtualMedia/"}
+    else : ${REDFISH_VIRTUAL_MEDIA_MANAGER_URI:=$(ManagerAPI | QueryJSON '.VirtualMedia["@odata.id"]')}
+    fi
+
+    ${PROG_PRINTF} "%s" "${REDFISH_VIRTUAL_MEDIA_MANAGER_URI}"
 }
 
-VirtualMediaMember()
+VirtualMediaManagerAPI()
 {
-    for media in $(VirtualMediaMembers)
-    do CallAuthenticatedAPI "${media}" || ${PROG_TRUE}
-    done \
-        | QueryJSON ". | select(.MediaTypes[] | contains(\"${VIRTUAL_MEDIA_TYPE}\")) | .[\"@odata.id\"]"
+    CallAuthenticated "$(VirtualMediaManagerURI)"
 }
 
-EjectVirtualMediaTarget()
+VirtualMediaMembersURIs()
 {
-    CallAuthenticatedAPI $(VirtualMediaWithType "DVD") \
-        | QueryJSON '.Oem.Hp.Actions["#HpiLOVirtualMedia.EjectVirtualMedia"].target'
+        
+    if ${PROG_TEST} "${API_DISCOVERY}" = "false"
+    then : ${REDFISH_VIRTUAL_MEDIA_MEMBERS_URI:="/redfish/v1/Managers/1/VirtualMedia/2/"}
+    else : ${REDFISH_VIRTUAL_MEDIA_MEMBERS_URI:=$(VirtualMediaManagerAPI | QueryJSON '.Members[] | .["@odata.id"]')}
+    fi
+
+    ${PROG_PRINTF} "%s" "${REDFISH_VIRTUAL_MEDIA_MEMBERS_URI}"
 }
 
-InsertVirtualMediaTarget()
+VirtualMediaMembersAPI()
 {
-    CallAuthenticatedAPI $(VirtualMediaWithType "DVD") \
-        | QueryJSON '.Oem.Hp.Actions["#HpiLOVirtualMedia.InsertVirtualMedia"].target'
+    for member in $(VirtualMediaMembersURIs)
+    do CallAuthenticated "${member}" || ${PROG_TRUE}
+    done
+}
+
+FindVirtualMediaMember()
+{
+    VirtualMediaMembersAPI \
+        | QueryJSON ". \
+            | select(.MediaTypes[] | contains(\"${1:-${VIRTUAL_MEDIA_TYPE}}\")) \
+            | .[\"@odata.id\"]
+        "
+}
+
+VirtualMediaMemberURI()
+{
+    if ${PROG_TEST} "${API_DISCOVERY}" = "false"
+    then : ${REDFISH_VIRTUAL_MEDIA_MEMBER_URI:="/redfish/v1/Managers/1/VirtualMedia/2/"}
+    else : ${REDFISH_VIRTUAL_MEDIA_MEMBER_URI:=$(FindVirtualMediaMember)}
+    fi
+
+    ${PROG_PRINTF} "%s" "${REDFISH_VIRTUAL_MEDIA_MEMBER_URI}"
+}
+
+VirtualMediaMemberAPI()
+{
+    CallAuthenticated "$(VirtualMediaMemberURI)" "${@:-}"
+}
+
+InsertVirtualMediaURI()
+{
+    if ${PROG_TEST} "${API_DISCOVERY}" = "false"
+    then : ${REDFISH_INSERT_VIRTUAL_MEDIA_URI:="/redfish/v1/Managers/1/VirtualMedia/2/Actions/Oem/Hp/HpiLOVirtualMedia.InsertVirtualMedia/"}
+    else : ${REDFISH_INSERT_VIRTUAL_MEDIA_URI:=$(VirtualMediaMemberAPI | QueryJSON '.Oem.Hp.Actions["#HpiLOVirtualMedia.InsertVirtualMedia"].target')}
+    fi
+
+    ${PROG_PRINTF} "%s" "${REDFISH_INSERT_VIRTUAL_MEDIA_URI}"
+}
+
+InsertVirtualMediaAPI()
+{
+    CallAuthenticated "$(InsertVirtualMediaURI)" "${@:-}"
 }
 
 InsertVirtualMediaPayload()
@@ -251,87 +425,83 @@ InsertVirtualMediaPayload()
     "
 }
 
-VirtualMedia()
-{
-    CallAuthenticatedAPI "$(VirtualMediaMember)"
-}
-
-VirtualMediaIsInserted()
-{
-    ${PROG_TEST} "true" = "$(VirtualMedia | QueryJSON '.Inserted')"
-}
-
 InsertVirtualMedia()
 {
-    CallAuthenticatedAPI "$(InsertVirtualMediaTarget)" \
+    InsertVirtualMediaAPI \
         --request POST \
         --data "$(InsertVirtualMediaPayload)"
 }
 
+VirtualMediaIsInserted()
+{
+    ${PROG_TEST} "true" = "$(VirtualMediaMemberAPI | QueryJSON '.Inserted')"
+}
+
+
+EjectVirtualMediaURI()
+{
+    if ${PROG_TEST} "${API_DISCOVERY}" = "false"
+    then : ${REDFISH_EJECT_VIRTUAL_MEDIA_URI:="/redfish/v1/Managers/1/VirtualMedia/2/Actions/Oem/Hp/HpiLOVirtualMedia.EjectVirtualMedia/"}
+    else : ${REDFISH_EJECT_VIRTUAL_MEDIA_URI:=$(VirtualMediaMemberAPI | QueryJSON '.Oem.Hp.Actions["#HpiLOVirtualMedia.EjectVirtualMedia"].target')}
+    fi
+
+    ${PROG_PRINTF} "%s" "${REDFISH_EJECT_VIRTUAL_MEDIA_URI}"
+}
+
+EjectVirtualMediaAPI()
+{
+    CallAuthenticated "$(EjectVirtualMediaURI)" "${@:-}"
+}
+
 EjectVirtualMedia()
 {
-    CallAuthenticatedAPI "$(EjectVirtualMediaTarget)" \
+    EjectVirtualMediaAPI \
         --request POST \
-        --data "{}"
+        --data "$(EjectVirtualMediaPayload)"
+}
+
+EjectVirtualMediaPayload()
+{
+    EmptyObject
 }
 
 ##############################
 # Boot Mode Helper Functions #
 ##############################
 
-SystemTarget()
+BiosURI()
 {
-    CallAuthenticatedAPI "${SYSTEMS_API}" \
-        | QueryJSON '.Members[0] | .["@odata.id"]'
+    if ${PROG_TEST} "${API_DISCOVERY}" = "false"
+    then : ${REDFISH_BIOS_URI:="/redfish/v1/systems/1/bios/"}
+    else : ${REDFISH_BIOS_URI:=$(SystemAPI | QueryJSON '.Oem.Hp.Links.BIOS["@odata.id"]')}
+    fi
+
+    ${PROG_PRINTF} "%s" "${REDFISH_BIOS_URI}"
 }
 
-System()
+BiosAPI()
 {
-    CallAuthenticatedAPI "$(SystemTarget)"
+    CallAuthenticated "$(BiosURI)" "${@:-}"
 }
 
-ResetTarget()
+BiosSettingsURI()
 {
-    System \
-        | QueryJSON ".Actions[\"#ComputerSystem.Reset\"] \
-            | select(.[\"ResetType@Redfish.AllowableValues\"][] | contains(\"${RESET_TYPE}\")) \
-            | .target"
+    if ${PROG_TEST} "${API_DISCOVERY}" = "false"
+    then : ${REST_BIOS_SETTINGS_URI:="/rest/v1/systems/1/bios/Settings"}
+    else : ${REST_BIOS_SETTINGS_URI:=$(BiosAPI | QueryJSON '.links.Settings.href')}
+    fi
+
+    ${PROG_PRINTF} "%s" "${REST_BIOS_SETTINGS_URI}"
 }
 
-ResetPayload()
+BiosSettingsAPI()
 {
-    EmptyObject | QueryJSON -c ".
-        | .ResetType=\"${RESET_TYPE}\"
-    "
-}
-
-ResetSystem()
-{
-    CallAuthenticatedAPI "$(ResetTarget)" \
-        --request POST \
-        --data "$(ResetPayload)"
-}
-
-BiosTarget()
-{
-    System \
-        | QueryJSON '.Oem.Hp.Links.BIOS["@odata.id"]'
-}
-
-BiosSettingsTarget()
-{
-    CallAuthenticatedAPI "$(BiosTarget)" \
-        | QueryJSON '.links.Settings.href'
-}
-
-BiosSettings()
-{
-    CallAuthenticatedAPI "$(BiosSettingsTarget)"
+    CallAuthenticated "$(BiosSettingsURI)" "${@:-}"
 }
 
 BootMode()
 {
-    CallAuthenticatedAPI "$(BiosTarget)" \
+    BiosAPI \
         | QueryJSON '.BootMode'
 }
 
@@ -344,18 +514,66 @@ BootModePayload()
 
 SetBootMode()
 {
-    CallAuthenticatedAPI "$(BiosSettingsTarget)" \
+    BiosSettingsAPI \
         --request PATCH \
         --data "$(BootModePayload)"
+}
+
+#####################################
+# Power Management Helper Functions #
+#####################################
+
+ResetTypes()
+{
+    SystemAPI \
+        | QueryJSON ". \
+            | .Actions[\"#ComputerSystem.Reset\"] \
+            | .[\"ResetType@Redfish.AllowableValues\"][]
+        "
+}
+
+ResetURI()
+{
+    SystemAPI \
+        | QueryJSON ".Actions[\"#ComputerSystem.Reset\"] \
+            | select(.[\"ResetType@Redfish.AllowableValues\"][] | contains(\"${RESET_TYPE}\")) \
+            | .target"
+}
+
+ResetAPI()
+{
+    CallAuthenticated "$(ResetSystemURI)" "${@:-}"
+}
+
+ResetPayload()
+{
+    EmptyObject | QueryJSON -c ".
+        | .ResetType=\"${RESET_TYPE}\"
+    "
+}
+
+Reset()
+{
+    ResetAPI \
+        --request POST \
+        --data "$(ResetPayload)"
 }
 
 ################
 # Main Program #
 ################
 
+Help()
+{
+    ${PROG_AWK} '$1 ~ /^[[:alnum:]]+[(][)]$/ { sub("()","",$1); print }' "${0}" \
+        | ${PROG_SORT}
+}
+
+help() { Help; }
+
 Default()
 {
-    ${PROG_FALSE}
+    Help
 }
 
 ${PROG_TEST} -d "${SESSIONS_DIR}" || ${PROG_INSTALL} -d "${SESSIONS_DIR}"
