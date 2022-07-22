@@ -153,7 +153,6 @@ SystemAPI()
     CallAuthenticated "$(SystemURI)" "${@:-}"
 }
 
-
 SessionServiceURI()
 {
     if ${PROG_TEST} "${API_DISCOVERY}" = "false"
@@ -505,10 +504,87 @@ BootMode()
         | QueryJSON '.BootMode'
 }
 
+SecureBootURI()
+{
+    if ${PROG_TEST} "${API_DISCOVERY}" = "false"
+    then : ${REDFISH_SECURE_BOOT_URI:="/redfish/v1/Systems/1/SecureBoot/"}
+    else : ${REDFISH_SECURE_BOOT_URI:=$(SystemAPI | QueryJSON '.Oem.Hp.Links.SecureBoot["@odata.id"]')}
+    fi
+
+    ${PROG_PRINTF} "%s" "${REDFISH_SECURE_BOOT_URI}"
+}
+
+SecureBootAPI()
+{
+    CallAuthenticated "$(SecureBootURI)" "${@:-}"
+}
+
+SecureBootCurrentState()
+{
+    SecureBootAPI \
+        | QueryJSON '.SecureBootCurrentState'
+}
+
+SecureBootEnabled()
+{
+    SecureBootAPI \
+        | QueryJSON '.SecureBootEnable'
+}
+
+EnableSecureBootPayload()
+{
+    EmptyObject | QueryJSON ". \
+        | .SecureBootEnable=true
+    "
+}
+
+EnableSecureBoot()
+{
+    SecureBootAPI \
+        --request POST \
+        --data "$(EnableSecureBootPayload)"
+}
+
+BiosUefiClass()
+{
+    if ${PROG_TEST} "${BIOS_DISCOVERY:-false}" = "false"
+    then : ${BIOS_UEFI_CLASS:="2"}
+    else : ${BIOS_UEFI_CLASS:=$(SystemAPI | QueryJSON '.Oem.Hp.Bios.UefiClass//0')}
+    fi
+
+    ${PROG_PRINTF} "%s" "${BIOS_UEFI_CLASS}"
+}
+
+BootModesAvailable()
+{
+    case $(BiosUefiClass) in
+        0) ${PROG_PRINTF} "%s\n" "LegacyBios" ;;
+        2) ${PROG_PRINTF} "%s\n" "LegacyBios" "UEFI" ;;
+        3) ${PROG_PRINTF} "%s\n" "UEFI" ;;
+        *) ${PROG_FALSE} ;;
+    esac
+}
+
 BootModePayload()
 {
+    case ${BOOT_MODE} in
+        legacy|Legacy|LegacyBios) BootModePayloadLegacyBios ;;
+        *) BootModePayloadUEFI ;;
+    esac
+}
+
+BootModePayloadLegacyBios()
+{
     EmptyObject | QueryJSON -c ". \
-        | .BootMode=\"${BOOT_MODE}\" \
+        | .BootMode=\"LegacyBios\" \
+    "
+}
+
+BootModePayloadUEFI()
+{
+    EmptyObject | QueryJSON -c ". \
+        | .BootMode=\"UEFI\" \
+        | .UefiOptimizedBoot=\"Enabled\" \
     "
 }
 
