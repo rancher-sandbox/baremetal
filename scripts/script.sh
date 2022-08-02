@@ -1247,6 +1247,60 @@ EnsureSnippetAnnotationsAreAllowed()
         || AllowSnippetAnnotations
 }
 
+###########################
+# Lab Environment Helpers #
+###########################
+
+DeployHacks()
+{
+    ${PROG_KUSTOMIZE} build "${REPO_ROOT}/deploy/hacks" \
+        | ${PROG_KUBECTL} "${1:-apply}" -f -
+}
+
+DeployCluster()
+{
+    ${PROG_KUSTOMIZE} build "${REPO_ROOT}/deploy/cluster" \
+        | ${PROG_KUBECTL} "${1:-apply}" -f -
+}
+
+FixRancherHelmChart()
+{
+    ${PROG_SED} -E -i \
+    -e 's/^(kubeVersion)(: < )(.+)-0$/\1: <= \3/' \
+    ${REPO_ROOT}/deploy/rancher/charts/rancher/Chart.yaml
+}
+
+PatchMachineInventory()
+{
+    # TODO role should be selectable
+    ${PROG_KUBECTL} patch "MachineInventory/${1}" \
+    --type merge \
+    --patch '{"spec":{"clusterName":"proof-of-concept","config":{"role":"server"}}}'
+}
+
+: ${MACHINE_REGISTRATION:="default"}
+
+RegistrationURL()
+{
+    ${PROG_KUBECTL} get "MachineRegistration/${MACHINE_REGISTRATION}" \
+        --output jsonpath='{.status.registrationURL}'
+}
+
+RegistrationConfig()
+{
+    ${PROG_CURL} $(RegistrationURL) \
+        --insecure
+}
+
+: ${PROG_SSH:="ssh"}
+
+ReplaceUserData()
+{
+    ${PROG_SSH} -l root -oStrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${1} curl https://media.metal.suse.network/userdata.yaml -o /oem/userdata
+    ${PROG_SSH} -l root -oStrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${1} curl https://media.metal.suse.network/userdata.yaml -o /oem/userdata.yaml
+    ${PROG_SSH} -l root -oStrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${1} systemctl restart --no-block ros-installer
+}
+
 ########################
 # Diagnostic Functions #
 ########################
