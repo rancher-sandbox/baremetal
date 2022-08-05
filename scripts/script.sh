@@ -697,7 +697,7 @@ WatchDeploymentInNamespace()
 
 HasKubernetesResource()
 {
-    $(PROG_KUBECTL) get "${1}/${2}" -A
+    $(PROG_KUBECTL) get "${1}/${2}" -A > /dev/null
 }
 
 #########################
