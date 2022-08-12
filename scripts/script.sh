@@ -1266,17 +1266,6 @@ DeployMachineRegistration()
         | ${PROG_KUBECTL} "${1:-apply}" -f -
 }
 
-MachineRegistrationIsDeployed()
-{
-    HasKubernetesResource "MachineRegistration" "default"
-}
-
-EnsureMachineRegistrationIsDeployed()
-{
-    MachineRegistrationIsDeployed \
-        || DeployMachineRegistration
-}
-
 DeployCluster()
 {
     ${PROG_KUSTOMIZE} build "${REPO_ROOT}/deploy/cluster" \
