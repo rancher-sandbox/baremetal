@@ -181,10 +181,14 @@ esac
 : ${KUSTOMIZE_VERSION:="4.5.5"}
 : ${LINKERD_VERSION:="2.11.2"}
 <<<<<<< HEAD
+<<<<<<< HEAD
 : ${ELEMENTAL_OPERATOR_VERSION:="0.5.0"}
 =======
 : ${Elemental_OPERATOR_VERSION:="0.1.0"}
 >>>>>>> 05ad2a7 (Fixing a few variable names and adding FIXMEs)
+=======
+: ${ELEMENTAL_OPERATOR_VERSION:="0.1.0"} # FIXME currently unused
+>>>>>>> c4b82b0 (A few unsaved changes we missing)
 : ${RANCHER_VERSION:="2.6.5"}
 : ${RKE2_CHANNEL:="v1.23"}
 
@@ -276,8 +280,12 @@ esac
 : ${LINKERD_CLI_CHECKSUM:="${LINKERD_CLI}.sha256"}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 : ${Elemental_OPERATOR_CHART_TARBALL:="Elemental-operator-${Elemental_OPERATOR_VERSION}.tgz"}
+=======
+: ${ELEMENTAL_OPERATOR_CHART_TARBALL:="Elemental-operator-${Elemental_OPERATOR_VERSION}.tgz"} # FIXME currently unused
+>>>>>>> c4b82b0 (A few unsaved changes we missing)
 
 >>>>>>> 05ad2a7 (Fixing a few variable names and adding FIXMEs)
 : ${RKE2_INSTALLER:="${DOWNLOADS}/install-rke2.sh"}
