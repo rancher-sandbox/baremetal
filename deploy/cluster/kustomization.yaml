@@ -1,9 +1,11 @@
 resources:
+  - resource/MachineInventorySelectorTemplate/selectortemplate.yaml
   - resource/Cluster/proof-of-concept.yaml
-  - resource/MachineInventory/2m25300d1n.yaml
-  - resource/MachineInventory/2m25300d20.yaml
-  - resource/MachineInventory/2m25300d3h.yaml
-  - resource/MachineInventory/j10083w6.yaml
+  # FIXME these are deprecated with the new Elemental operator
+#  - resource/MachineInventory/2m25300d1n.yaml
+#  - resource/MachineInventory/2m25300d20.yaml
+#  - resource/MachineInventory/2m25300d3h.yaml
+#  - resource/MachineInventory/j10083w6.yaml
   - resource/BareMetalHost/2m25300d1n.yaml
   - resource/BareMetalHost/2m25300d20.yaml
   - resource/BareMetalHost/2m25300d3h.yaml
