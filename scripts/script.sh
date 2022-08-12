@@ -1376,6 +1376,7 @@ Default()
     EnsureExternalDNSIsDeployed
     EnsureSnippetAnnotationsAreAllowed # we need to patch Ingresses to allow connection upgrades
     EnsureLargeClientHeaderBuffersAreAllowed # this is needed for elemental-register's smbios transfer via HTTP header
+    #DeployHacks # this is specific to the Provo lab, remove or modify for other labs
     EnsureMediaIsDeployed
     EnsureIronicIsDeployed
     EnsureBareMetalOperatorIsDeployed
