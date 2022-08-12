@@ -216,7 +216,11 @@ esac
 : ${KREW_UPSTREAM:="${GITHUB}/kubernetes-sigs/krew/releases/download/v${KREW_VERSION}"}
 : ${KUSTOMIZE_UPSTREAM:="${GITHUB}/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}"}
 : ${LINKERD_UPSTREAM:="${GITHUB}/linkerd/linkerd2/releases/download/${LINKERD_CHANNEL}-${LINKERD_VERSION}"}
+<<<<<<< HEAD
 : ${ELEMENTAL_OPERATOR_UPSTREAM:="oci://registry.opensuse.org/isv/rancher/elemental/charts/elemental/elemental-operator"}
+=======
+: ${RANCHEROS_OPERATOR_UPSTREAM:="oci://registry.opensuse.org/isv/rancher/elemental/charts/elemental/elemental-operator"}
+>>>>>>> f535d23 (Change to Elemental operator)
 
 #########################################
 # Helm-specific Mirroring Configuration #
@@ -296,8 +300,13 @@ esac
 : ${RANCHER_NAMESPACE:="cattle-system"}
 : ${RANCHER_BOOTSTRAP_SECRET:="bootstrap-secret"}
 
+<<<<<<< HEAD
 : ${ELEMENTAL_OPERATOR_NAMESPACE:="cattle-elemental-system"}
 : ${ELEMENTAL_OPERATOR_DEPLOYMENT:="elemental-operator"}
+=======
+: ${RANCHEROS_OPERATOR_NAMESPACE:="cattle-elemental-system"}
+: ${RANCHEROS_OPERATOR_DEPLOYMENT:="elemental-operator"}
+>>>>>>> f535d23 (Change to Elemental operator)
 
 : ${RKE2_INGRESS_CONFIG_MAP:="rke2-ingress-nginx-controller"}
 : ${RKE2_INGRESS_NAMESPACE:="kube-system"}
@@ -1181,10 +1190,18 @@ ElementalOperatorIsDeployed()
 
 DeployElementalOperator()
 {
+<<<<<<< HEAD
     ${PROG_HELM} install "${ELEMENTAL_OPERATOR_DEPLOYMENT}" "${ELEMENTAL_OPERATOR_UPSTREAM}" \
         --create-namespace \
         --namespace "${ELEMENTAL_OPERATOR_NAMESPACE}"
     WaitForElementalOperator
+=======
+    ${PROG_HELM} upgrade \
+        --create-namespace -n "${RANCHEROS_OPERATOR_NAMESPACE}" \
+        --install elemental-operator "${RANCHEROS_OPERATOR_UPSTREAM}"
+
+    WaitForRancherOSOperator
+>>>>>>> f535d23 (Change to Elemental operator)
 }
 
 WaitForElementalOperator()
