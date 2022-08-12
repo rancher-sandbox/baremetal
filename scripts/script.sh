@@ -1252,6 +1252,27 @@ EnsureSnippetAnnotationsAreAllowed()
         || AllowSnippetAnnotations
 }
 
+LargeClientHeaderBuffersAreAllowed()
+{
+    ${PROG_TEST} "true" = \
+        $(${PROG_KUBECTL} get "configmap/${RKE2_INGRESS_CONFIG_MAP}" \
+            --namespace "${RKE2_INGRESS_NAMESPACE}" \
+            --output jsonpath="{.data.large-client-header-buffers}")
+}
+
+AllowLargeClientHeaderBuffers()
+{
+    ${PROG_KUBECTL} patch "configmap/${RKE2_INGRESS_CONFIG_MAP}" \
+        --namespace "${RKE2_INGRESS_NAMESPACE}" \
+        --patch '{"data":{"large-client-header-buffers": "4 64k"}}'
+}
+
+EnsureLargeClientHeaderBuffersAreAllowed()
+{
+    LargeClientHeaderBuffersAreAllowed \
+        || AllowLargeClientHeaderBuffers
+}
+
 ###########################
 # Lab Environment Helpers #
 ###########################
@@ -1355,7 +1376,8 @@ Default()
     EnsureKustomizeIsInstalled
     EnsureCertManagerIsDeployed
     EnsureExternalDNSIsDeployed
-    EnsureSnippetAnnotationsAreAllowed
+    EnsureSnippetAnnotationsAreAllowed # we need to patch Ingresses to allow connection upgrades
+    EnsureLargeClientHeaderBuffersAreAllowed # this is needed for elemental-register's smbios transfer via HTTP header
     EnsureMediaIsDeployed
     EnsureIronicIsDeployed
     EnsureBareMetalOperatorIsDeployed
