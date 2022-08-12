@@ -180,7 +180,11 @@ esac
 : ${KREW_VERSION:="0.4.3"}
 : ${KUSTOMIZE_VERSION:="4.5.5"}
 : ${LINKERD_VERSION:="2.11.2"}
+<<<<<<< HEAD
 : ${ELEMENTAL_OPERATOR_VERSION:="0.5.0"}
+=======
+: ${Elemental_OPERATOR_VERSION:="0.1.0"}
+>>>>>>> 05ad2a7 (Fixing a few variable names and adding FIXMEs)
 : ${RANCHER_VERSION:="2.6.5"}
 : ${RKE2_CHANNEL:="v1.23"}
 
@@ -217,10 +221,14 @@ esac
 : ${KUSTOMIZE_UPSTREAM:="${GITHUB}/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}"}
 : ${LINKERD_UPSTREAM:="${GITHUB}/linkerd/linkerd2/releases/download/${LINKERD_CHANNEL}-${LINKERD_VERSION}"}
 <<<<<<< HEAD
+<<<<<<< HEAD
 : ${ELEMENTAL_OPERATOR_UPSTREAM:="oci://registry.opensuse.org/isv/rancher/elemental/charts/elemental/elemental-operator"}
 =======
 : ${RANCHEROS_OPERATOR_UPSTREAM:="oci://registry.opensuse.org/isv/rancher/elemental/charts/elemental/elemental-operator"}
 >>>>>>> f535d23 (Change to Elemental operator)
+=======
+: ${ELEMENTAL_OPERATOR_UPSTREAM:="oci://registry.opensuse.org/isv/rancher/elemental/charts/elemental/elemental-operator"}
+>>>>>>> 05ad2a7 (Fixing a few variable names and adding FIXMEs)
 
 #########################################
 # Helm-specific Mirroring Configuration #
@@ -267,6 +275,11 @@ esac
 : ${LINKERD_CLI:="linkerd2-cli-${LINKERD_CHANNEL}-${LINKERD_VERSION}-${GOOS}-${GOARCH}"}
 : ${LINKERD_CLI_CHECKSUM:="${LINKERD_CLI}.sha256"}
 
+<<<<<<< HEAD
+=======
+: ${Elemental_OPERATOR_CHART_TARBALL:="Elemental-operator-${Elemental_OPERATOR_VERSION}.tgz"}
+
+>>>>>>> 05ad2a7 (Fixing a few variable names and adding FIXMEs)
 : ${RKE2_INSTALLER:="${DOWNLOADS}/install-rke2.sh"}
 
 ################################
@@ -301,12 +314,17 @@ esac
 : ${RANCHER_BOOTSTRAP_SECRET:="bootstrap-secret"}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 : ${ELEMENTAL_OPERATOR_NAMESPACE:="cattle-elemental-system"}
 : ${ELEMENTAL_OPERATOR_DEPLOYMENT:="elemental-operator"}
 =======
 : ${RANCHEROS_OPERATOR_NAMESPACE:="cattle-elemental-system"}
 : ${RANCHEROS_OPERATOR_DEPLOYMENT:="elemental-operator"}
 >>>>>>> f535d23 (Change to Elemental operator)
+=======
+: ${ELEMENTAL_OPERATOR_NAMESPACE:="cattle-elemental-system"}
+: ${ELEMENTAL_OPERATOR_DEPLOYMENT:="elemental-operator"}
+>>>>>>> 05ad2a7 (Fixing a few variable names and adding FIXMEs)
 
 : ${RKE2_INGRESS_CONFIG_MAP:="rke2-ingress-nginx-controller"}
 : ${RKE2_INGRESS_NAMESPACE:="kube-system"}
@@ -1180,7 +1198,11 @@ EnsureKrewIsInstalled()
 }
 
 #######################################
+<<<<<<< HEAD
 # elemental-operator Helper Functions #
+=======
+# Elemental-operator Helper Functions #
+>>>>>>> 05ad2a7 (Fixing a few variable names and adding FIXMEs)
 #######################################
 
 ElementalOperatorIsDeployed()
@@ -1197,11 +1219,15 @@ DeployElementalOperator()
     WaitForElementalOperator
 =======
     ${PROG_HELM} upgrade \
-        --create-namespace -n "${RANCHEROS_OPERATOR_NAMESPACE}" \
-        --install elemental-operator "${RANCHEROS_OPERATOR_UPSTREAM}"
+        --create-namespace -n "${ELEMENTAL_OPERATOR_NAMESPACE}" \
+        --install elemental-operator "${ELEMENTAL_OPERATOR_UPSTREAM}"
 
+<<<<<<< HEAD
     WaitForRancherOSOperator
 >>>>>>> f535d23 (Change to Elemental operator)
+=======
+    WaitForElementalOperator
+>>>>>>> 05ad2a7 (Fixing a few variable names and adding FIXMEs)
 }
 
 WaitForElementalOperator()
