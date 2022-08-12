@@ -695,6 +695,11 @@ WatchDeploymentInNamespace()
         && ${PROG_KUBECTL} rollout status "Deployment/${2}" --namespace "${1}"
 }
 
+HasKubernetesResource()
+{
+    $(PROG_KUBECTL) get "${1}/${2}" -A > /dev/null
+}
+
 #########################
 # helm Helper Functions #
 #########################
@@ -1255,6 +1260,23 @@ DeployHacks()
 {
     ${PROG_KUSTOMIZE} build "${REPO_ROOT}/deploy/hacks" \
         | ${PROG_KUBECTL} "${1:-apply}" -f -
+}
+
+DeployMachineRegistration()
+{
+    ${PROG_KUSTOMIZE} build "${REPO_ROOT}/deploy/machineregistration" \
+        | ${PROG_KUBECTL} "${1:-apply}" -f -
+}
+
+MachineRegistrationIsDeployed()
+{
+    HasKubernetesResource "MachineRegistration" "default"
+}
+
+EnsureMachineRegistrationIsDeployed()
+{
+    MachineRegistrationIsDeployed \
+        || DeployMachineRegistration
 }
 
 DeployCluster()

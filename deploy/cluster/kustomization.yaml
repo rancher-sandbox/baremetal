@@ -1,6 +1,5 @@
 resources:
   - resource/Cluster/proof-of-concept.yaml
-  - resource/MachineRegistration/default.yaml
   - resource/MachineInventory/2m25300d1n.yaml
   - resource/MachineInventory/2m25300d20.yaml
   - resource/MachineInventory/2m25300d3h.yaml
