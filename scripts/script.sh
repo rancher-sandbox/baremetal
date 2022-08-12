@@ -216,7 +216,7 @@ esac
 : ${KREW_UPSTREAM:="${GITHUB}/kubernetes-sigs/krew/releases/download/v${KREW_VERSION}"}
 : ${KUSTOMIZE_UPSTREAM:="${GITHUB}/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}"}
 : ${LINKERD_UPSTREAM:="${GITHUB}/linkerd/linkerd2/releases/download/${LINKERD_CHANNEL}-${LINKERD_VERSION}"}
-: ${RANCHEROS_OPERATOR_UPSTREAM:="${GITHUB}/rancher-sandbox/rancheros-operator/releases/download/v${RANCHEROS_OPERATOR_VERSION}"}
+: ${RANCHEROS_OPERATOR_UPSTREAM:="oci://registry.opensuse.org/isv/rancher/elemental/charts/elemental/elemental-operator"}
 
 #########################################
 # Helm-specific Mirroring Configuration #
@@ -298,8 +298,8 @@ esac
 : ${RANCHER_NAMESPACE:="cattle-system"}
 : ${RANCHER_BOOTSTRAP_SECRET:="bootstrap-secret"}
 
-: ${RANCHEROS_OPERATOR_NAMESPACE:="cattle-rancheros-operator-system"}
-: ${RANCHEROS_OPERATOR_DEPLOYMENT:="rancheros-operator"}
+: ${RANCHEROS_OPERATOR_NAMESPACE:="cattle-elemental-system"}
+: ${RANCHEROS_OPERATOR_DEPLOYMENT:="elemental-operator"}
 
 : ${RKE2_INGRESS_CONFIG_MAP:="rke2-ingress-nginx-controller"}
 : ${RKE2_INGRESS_NAMESPACE:="kube-system"}
@@ -1183,9 +1183,10 @@ RancherOSOperatorIsDeployed()
 
 DeployRancherOSOperator()
 {
-    ${PROG_HELM} install rancheros-operator "${RANCHEROS_OPERATOR_UPSTREAM}/${RANCHEROS_OPERATOR_CHART_TARBALL}" \
-        --create-namespace \
-        --namespace cattle-rancheros-operator-system
+    ${PROG_HELM} upgrade \
+        --create-namespace -n "${RANCHEROS_OPERATOR_NAMESPACE}" \
+        --install elemental-operator "${RANCHEROS_OPERATOR_UPSTREAM}"
+
     WaitForRancherOSOperator
 }
 
