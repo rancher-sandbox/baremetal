@@ -157,7 +157,7 @@
       subPath: get-resource.sh
     - name: ironic
       mountPath: /usr/local/bin/mkisofs
-      subpath: mkisofs
+      subPath: mkisofs
 
 - op: replace
   path: /spec/template/spec/containers/1/volumeMounts
@@ -235,7 +235,7 @@
       subPath: get-resource.sh
     - name: ironic
       mountPath: /usr/local/bin/mkisofs
-      subpath: mkisofs
+      subPath: mkisofs
 
 - op: replace
   path: /spec/template/spec/containers/2/volumeMounts
@@ -313,7 +313,7 @@
       subPath: get-resource.sh
     - name: ironic
       mountPath: /usr/local/bin/mkisofs
-      subpath: mkisofs
+      subPath: mkisofs
 
 - op: replace
   path: /spec/template/spec/containers/3/volumeMounts
@@ -391,7 +391,7 @@
       subPath: get-resource.sh
     - name: ironic
       mountPath: /usr/local/bin/mkisofs
-      subpath: mkisofs
+      subPath: mkisofs
 
 - op: replace
   path: /spec/template/spec/containers/4/volumeMounts
@@ -469,7 +469,7 @@
       subPath: get-resource.sh
     - name: ironic
       mountPath: /usr/local/bin/mkisofs
-      subpath: mkisofs
+      subPath: mkisofs
 
 - op: replace
   path: /spec/template/spec/containers/5/volumeMounts
@@ -547,5 +547,5 @@
       subPath: get-resource.sh
     - name: ironic
       mountPath: /usr/local/bin/mkisofs
-      subpath: mkisofs
+      subPath: mkisofs
 
