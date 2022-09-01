@@ -1,0 +1,27 @@
+- op: replace
+  path: /data/CACHEURL
+  value: {{ .Env.IRONIC_CACHE_IMAGE_SERVER_BASE_URL }}/images
+- op: replace
+  path: /data/DEPLOY_KERNEL_URL
+  value: {{ .Env.IRONIC_BOOT_IMAGE_SERVER_BASE_URL }}/images/ironic-python-agent.kernel
+- op: replace
+  path: /data/DEPLOY_RAMDISK_URL
+  value: {{ .Env.IRONIC_BOOT_IMAGE_SERVER_BASE_URL }}/images/ironic-python-agent.initramfs
+- op: replace
+  path: /data/DHCP_RANGE
+  value: {{ .Env.IRONIC_DHCP_RANGE }}
+- op: replace
+  path: /data/IRONIC_ENDPOINT
+  value: {{ .Env.IRONIC_API_BASE_ENDPOINT }}/v1/
+- op: replace
+  path: /data/IRONIC_INSPECTOR_ENDPOINT
+  value: {{ .Env.IRONIC_INSPECTOR_BASE_ENDPOINT }}/v1/
+- op: replace
+  path: /data/PROVISIONING_INTERFACE
+  value: {{ .Env.IRONIC_PROVISIONING_INTERFACE }}
+- op: add
+  path: /data/PROVISIONING_IP
+  value: {{ .Env.IRONIC_PROVISIONING_IP }}
+- op: add
+  path: /data/RESTART_CONTAINER_CERTIFICATE_UPDATED
+  value: "false"

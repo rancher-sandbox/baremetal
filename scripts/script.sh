@@ -38,6 +38,13 @@ set -o nounset
 : ${RANCHER_DEPLOYMENT:="${RANCHER_HELM_RELEASE}"}
 : ${RANCHER_REPLICAS:="3"}
 
+: ${DNS_DOMAIN:="${RANCHER_HOSTNAME}"}
+: ${MEDIA_SERVER_URL:="https://media.${DNS_DOMAIN}"}
+: ${IRONIC_CACHE_IMAGE_SERVER_BASE_URL:="http://cache.ironic.${DNS_DOMAIN}"}
+: ${IRONIC_BOOT_IMAGE_SERVER_BASE_URL:="http://boot.ironic.${DNS_DOMAIN}"}
+: ${IRONIC_API_BASE_ENDPOINT:="http://api.ironic.${DNS_DOMAIN}"}
+: ${IRONIC_INSPECTOR_BASE_ENDPOINT:="http://inspector.ironic.${DNS_DOMAIN}"}
+
 #########################
 # Special Configuration #
 #########################
@@ -1318,8 +1325,8 @@ RegistrationConfig()
 
 ReplaceUserData()
 {
-    ${PROG_SSH} -l root -oStrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${1} curl https://media.metal.suse.network/userdata.yaml -o /oem/userdata
-    ${PROG_SSH} -l root -oStrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${1} curl https://media.metal.suse.network/userdata.yaml -o /oem/userdata.yaml
+    ${PROG_SSH} -l root -oStrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${1} curl ${MEDIA_SERVER_URL}/userdata.yaml -o /oem/userdata
+    ${PROG_SSH} -l root -oStrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${1} curl ${MEDIA_SERVER_URL}/userdata.yaml -o /oem/userdata.yaml
     ${PROG_SSH} -l root -oStrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${1} systemctl restart --no-block ros-installer
 }
 
