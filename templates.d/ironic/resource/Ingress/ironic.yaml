@@ -1,0 +1,68 @@
+---
+kind: Ingress
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: ironic
+  annotations:
+    cert-manager.io/issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:{{ if eq (getenv "IRONIC_INGRESS_SETUP_TLS") "true" }}
+  tls:
+    - hosts:
+        - api.ironic.{{ .Env.DNS_DOMAIN }}
+      secretName: ironic-api-certificate
+    - hosts:
+        - inspector.ironic.{{ .Env.DNS_DOMAIN }}
+      secretName: ironic-inspector-certificate
+    - hosts:
+        - boot.ironic.{{ .Env.DNS_DOMAIN }}
+      secretName: ironic-boot-certificate
+    - hosts:
+        - cache.ironic.{{ .Env.DNS_DOMAIN }}
+      secretName: ironic-cache-certificate{{ end }}
+  defaultBackend:
+    service:
+      name: ironic
+      port:
+        name: api
+  rules:
+    - host: api.ironic.{{ .Env.DNS_DOMAIN }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ironic
+                port:
+                  name: api
+    - host: inspector.ironic.{{ .Env.DNS_DOMAIN }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ironic
+                port:
+                  name: inspector
+    - host: boot.ironic.{{ .Env.DNS_DOMAIN }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ironic
+                port:
+                  name: httpd
+    - host: cache.ironic.{{ .Env.DNS_DOMAIN }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ironic
+                port:
+                  name: httpd
