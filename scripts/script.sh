@@ -180,7 +180,7 @@ esac
 : ${KREW_VERSION:="0.4.3"}
 : ${KUSTOMIZE_VERSION:="4.5.5"}
 : ${LINKERD_VERSION:="2.11.2"}
-: ${ELEMENTAL_OPERATOR_VERSION:="0.1.0"} # FIXME currently unused
+: ${ELEMENTAL_OPERATOR_VERSION:="0.5.0"} 
 : ${RANCHER_VERSION:="2.6.5"}
 : ${RKE2_CHANNEL:="v1.23"}
 
@@ -262,8 +262,6 @@ esac
 
 : ${LINKERD_CLI:="linkerd2-cli-${LINKERD_CHANNEL}-${LINKERD_VERSION}-${GOOS}-${GOARCH}"}
 : ${LINKERD_CLI_CHECKSUM:="${LINKERD_CLI}.sha256"}
-
-: ${ELEMENTAL_OPERATOR_CHART_TARBALL:="Elemental-operator-${Elemental_OPERATOR_VERSION}.tgz"} # FIXME currently unused
 
 : ${RKE2_INSTALLER:="${DOWNLOADS}/install-rke2.sh"}
 
@@ -1173,7 +1171,7 @@ EnsureKrewIsInstalled()
 }
 
 #######################################
-# Elemental-operator Helper Functions #
+# elemental-operator Helper Functions #
 #######################################
 
 ElementalOperatorIsDeployed()
@@ -1183,10 +1181,9 @@ ElementalOperatorIsDeployed()
 
 DeployElementalOperator()
 {
-    ${PROG_HELM} upgrade \
-        --create-namespace -n "${ELEMENTAL_OPERATOR_NAMESPACE}" \
-        --install elemental-operator "${ELEMENTAL_OPERATOR_UPSTREAM}"
-
+    ${PROG_HELM} install "${ELEMENTAL_OPERATOR_DEPLOYMENT}" "${ELEMENTAL_OPERATOR_UPSTREAM}" \
+        --create-namespace \
+        --namespace "${ELEMENTAL_OPERATOR_NAMESPACE}"
     WaitForElementalOperator
 }
 

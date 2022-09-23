@@ -3,6 +3,7 @@ configMapGenerator:
   - name: ironic
     files:
       - bin/configure-coreos-ipa
+      - bin/configure-httpd-ipa.sh
       - bin/configure-ironic.sh
       - bin/coreos-ipa-common.sh
       - bin/ironic-common.sh
@@ -23,3 +24,4 @@ configMapGenerator:
       - etc/ironic/ironic.conf.j2
       - tmp/inspector.ipxe.j2
       - tmp/ironic-python-agent.ign.j2
+      - usr/local/bin/mkisofs
