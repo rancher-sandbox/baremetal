@@ -1,7 +1,8 @@
-kind: MachineRegistration
 apiVersion: elemental.cattle.io/v1beta1
+kind: MachineRegistration
 metadata:
-  name: default
+  name: test-nodes
+  namespace: fleet-default
 spec:
   config:
     cloud-config:
@@ -10,8 +11,10 @@ spec:
         passwd: root
     elemental:
       install:
-        automatic: true
-        device: /dev/sda
-        eject-cd: true
         reboot: true
+        device: /dev/sda
         debug: true
+        ejectcd: true
+  machineName: m-${System Information/Manufacturer}-${System Information/Product Name}-${System Information/UUID}
+  machineInventoryLabels:
+    location: "europe"
