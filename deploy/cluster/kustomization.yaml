@@ -1,4 +1,5 @@
 resources:
+  - resource/MachineInventorySelectorTemplate/selectortemplate.yaml
   - resource/Cluster/proof-of-concept.yaml
   - resource/MachineInventory/2m25300d1n.yaml
   - resource/MachineInventory/2m25300d20.yaml
