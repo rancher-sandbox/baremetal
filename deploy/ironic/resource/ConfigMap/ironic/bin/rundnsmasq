@@ -21,4 +21,4 @@ for iface in $( echo "$DNSMASQ_EXCEPT_INTERFACE" | tr ',' ' '); do
     sed -i -e "/^interface=.*/ a\except-interface=${iface}" /etc/dnsmasq.conf
 done
 
-exec /usr/sbin/dnsmasq -d -q -C /etc/dnsmasq.conf
+exec /usr/sbin/dnsmasq -d -q --dhcp-ignore-clid -C /etc/dnsmasq.conf

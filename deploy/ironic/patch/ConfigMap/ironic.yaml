@@ -9,7 +9,7 @@
   value: http://boot.ironic.metal.suse.network/images/ironic-python-agent.initramfs
 - op: replace
   path: /data/DHCP_RANGE
-  value: 172.19.28.10,172.19.28.100
+  value: 172.19.28.10,172.19.28.100,infinite
 - op: replace
   path: /data/IRONIC_ENDPOINT
   value: http://api.ironic.metal.suse.network/v1/
