@@ -90,6 +90,9 @@
       mountPath: /bin/configure-coreos-ipa
       subPath: configure-coreos-ipa
     - name: ironic
+      mountPath: /bin/configure-httpd-ipa.sh
+      subPath: configure-httpd-ipa.sh
+    - name: ironic
       mountPath: /bin/configure-ironic.sh
       subPath: configure-ironic.sh
     - name: ironic
@@ -152,6 +155,9 @@
     - name: ironic-ipa-downloader
       mountPath: /usr/local/bin/get-resource.sh
       subPath: get-resource.sh
+    - name: ironic
+      mountPath: /usr/local/bin/mkisofs
+      subPath: mkisofs
 
 - op: replace
   path: /spec/template/spec/containers/1/volumeMounts
@@ -162,6 +168,9 @@
       mountPath: /bin/configure-coreos-ipa
       subPath: configure-coreos-ipa
     - name: ironic
+      mountPath: /bin/configure-httpd-ipa.sh
+      subPath: configure-httpd-ipa.sh
+    - name: ironic
       mountPath: /bin/configure-ironic.sh
       subPath: configure-ironic.sh
     - name: ironic
@@ -224,6 +233,9 @@
     - name: ironic-ipa-downloader
       mountPath: /usr/local/bin/get-resource.sh
       subPath: get-resource.sh
+    - name: ironic
+      mountPath: /usr/local/bin/mkisofs
+      subPath: mkisofs
 
 - op: replace
   path: /spec/template/spec/containers/2/volumeMounts
@@ -234,6 +246,9 @@
       mountPath: /bin/configure-coreos-ipa
       subPath: configure-coreos-ipa
     - name: ironic
+      mountPath: /bin/configure-httpd-ipa.sh
+      subPath: configure-httpd-ipa.sh
+    - name: ironic
       mountPath: /bin/configure-ironic.sh
       subPath: configure-ironic.sh
     - name: ironic
@@ -296,6 +311,9 @@
     - name: ironic-ipa-downloader
       mountPath: /usr/local/bin/get-resource.sh
       subPath: get-resource.sh
+    - name: ironic
+      mountPath: /usr/local/bin/mkisofs
+      subPath: mkisofs
 
 - op: replace
   path: /spec/template/spec/containers/3/volumeMounts
@@ -306,6 +324,9 @@
       mountPath: /bin/configure-coreos-ipa
       subPath: configure-coreos-ipa
     - name: ironic
+      mountPath: /bin/configure-httpd-ipa.sh
+      subPath: configure-httpd-ipa.sh
+    - name: ironic
       mountPath: /bin/configure-ironic.sh
       subPath: configure-ironic.sh
     - name: ironic
@@ -368,6 +389,9 @@
     - name: ironic-ipa-downloader
       mountPath: /usr/local/bin/get-resource.sh
       subPath: get-resource.sh
+    - name: ironic
+      mountPath: /usr/local/bin/mkisofs
+      subPath: mkisofs
 
 - op: replace
   path: /spec/template/spec/containers/4/volumeMounts
@@ -378,6 +402,9 @@
       mountPath: /bin/configure-coreos-ipa
       subPath: configure-coreos-ipa
     - name: ironic
+      mountPath: /bin/configure-httpd-ipa.sh
+      subPath: configure-httpd-ipa.sh
+    - name: ironic
       mountPath: /bin/configure-ironic.sh
       subPath: configure-ironic.sh
     - name: ironic
@@ -440,6 +467,9 @@
     - name: ironic-ipa-downloader
       mountPath: /usr/local/bin/get-resource.sh
       subPath: get-resource.sh
+    - name: ironic
+      mountPath: /usr/local/bin/mkisofs
+      subPath: mkisofs
 
 - op: replace
   path: /spec/template/spec/containers/5/volumeMounts
@@ -450,6 +480,9 @@
       mountPath: /bin/configure-coreos-ipa
       subPath: configure-coreos-ipa
     - name: ironic
+      mountPath: /bin/configure-httpd-ipa.sh
+      subPath: configure-httpd-ipa.sh
+    - name: ironic
       mountPath: /bin/configure-ironic.sh
       subPath: configure-ironic.sh
     - name: ironic
@@ -512,4 +545,7 @@
     - name: ironic-ipa-downloader
       mountPath: /usr/local/bin/get-resource.sh
       subPath: get-resource.sh
+    - name: ironic
+      mountPath: /usr/local/bin/mkisofs
+      subPath: mkisofs
 
