@@ -1,7 +1,7 @@
-# metal.suse.network Scripts and Manifests
+# Metal3 deployment and demo Scripts and Manifests
 
 This repo contains (almost) everything needed to get a working metal3
-deployment up and running.
+deployment up and running and demo bare metal provisioning.
 
 Short version is that stuff in `scripts` is executable, `scripts/script.sh` is the main deploy script that does all the work. If you wanna read it, start at the bottom in the `Default` function to see what it does if you give it no args. Otherwise it calls whatever function you pass as args.
 
