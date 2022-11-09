@@ -1,0 +1,10 @@
+resources:
+  - resource/BareMetalHost/2m25300d1n.yaml
+  - resource/BareMetalHost/2m25300d20.yaml
+  - resource/BareMetalHost/2m25300d3h.yaml
+  - resource/Secret/2m25300d1n-credentials.yaml
+  - resource/Secret/2m25300d20-credentials.yaml
+  - resource/Secret/2m25300d3h-credentials.yaml
+  - resource/Secret/2m25300d1n-user-data.yaml
+  - resource/Secret/2m25300d20-user-data.yaml
+  - resource/Secret/2m25300d3h-user-data.yaml

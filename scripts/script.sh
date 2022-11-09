@@ -176,7 +176,7 @@ esac
 # not to install the latest versions of everything. To that end, all 
 # components versions are defined here.
 
-: ${BAREMETAL_OPERATOR_VERSION:="1.1.2"}
+: ${BAREMETAL_OPERATOR_VERSION:="1.1.2"} #FIXME(tirnich-28-10-2022): rename this, this refers to the CAPM3 version. Note that the same version also needs to be set in deploy/baremetal-operator/kustomization.yaml 
 : ${CERT_MANAGER_VERSION:="1.8.1"}
 : ${CLUSTER_API_VERSION:="1.1.5"}
 : ${CLUSTERCTL_VERSION:="${CLUSTER_API_VERSION}"}
@@ -187,9 +187,9 @@ esac
 : ${KREW_VERSION:="0.4.3"}
 : ${KUSTOMIZE_VERSION:="4.5.5"}
 : ${LINKERD_VERSION:="2.11.2"}
-: ${ELEMENTAL_OPERATOR_VERSION:="0.5.0"}
-: ${RANCHER_VERSION:="2.6.5"}
-: ${RKE2_CHANNEL:="v1.23"}
+: ${ELEMENTAL_OPERATOR_VERSION:="0.6.3"} #FIXME(tirnich-25-10-2022): currently not used, see https://github.com/rancher-sandbox/baremetal/issues/7
+: ${RANCHER_VERSION:="2.6.9"} #FIXME(tirnich-26-10-2022): currently not used, Rancher version is hardcoded in deploy/rancher/kustomization.yaml, see https://github.com/rancher-sandbox/baremetal/issues/17 
+: ${RKE2_CHANNEL:="v1.24"}
 
 : ${BAREMETAL_OPERATOR_TAG:="capm3-v${BAREMETAL_OPERATOR_VERSION}"}
 : ${LINKERD_CHANNEL="stable"}
@@ -1290,7 +1290,7 @@ DeployHacks()
 
 DeployMachineRegistration()
 {
-    ${PROG_KUSTOMIZE} build "${REPO_ROOT}/deploy/machineregistration" \
+    ${PROG_KUSTOMIZE} build "${REPO_ROOT}/demo/machineregistration" \
         | ${PROG_KUBECTL} "${1:-apply}" -f -
 }
 
@@ -1307,7 +1307,7 @@ EnsureMachineRegistrationIsDeployed()
 
 DeployCluster()
 {
-    ${PROG_KUSTOMIZE} build "${REPO_ROOT}/deploy/cluster" \
+    ${PROG_KUSTOMIZE} build "${REPO_ROOT}/demo/elemental-cluster" \
         | ${PROG_KUBECTL} "${1:-apply}" -f -
 }
 
@@ -1394,8 +1394,8 @@ Default()
     EnsureExternalDNSIsDeployed
     EnsureSnippetAnnotationsAreAllowed # we need to patch Ingresses to allow connection upgrades
     #EnsureLargeClientHeaderBuffersAreAllowed # this is needed for elemental-register's smbios transfer via HTTP header
-    #DeployHacks # this is specific to the Provo lab, remove or modify for other labs
-    #EnsureMediaIsDeployed
+    DeployHacks # this is specific to the Provo lab, remove or modify for other labs
+    EnsureMediaIsDeployed
     EnsureIronicIsDeployed
     EnsureBareMetalOperatorIsDeployed
     EnsureClusterAPIIsDeployed

@@ -15,6 +15,10 @@ spec:
         device: /dev/sda
         debug: true
         ejectcd: true
-  machineName: m-${System Information/Manufacturer}-${System Information/Product Name}-${System Information/UUID}
+  machineName: my-machine
   machineInventoryLabels:
     location: "europe"
+    manufacturer: "${System Information/Manufacturer}"
+    productName: "${System Information/Product Name}"
+    serialNumber: "${System Information/Serial Number}"
+    machineUUID: "${System Information/UUID}"
