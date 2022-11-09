@@ -1,0 +1,29 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ include "powerdns.fullname" . }}
+spec:
+  type: {{ .Values.service.type }}
+  clusterIP: {{ .Values.service.ip }}
+  ports:
+    - name: api
+      port: 8081
+      protocol: TCP
+      targetPort: 8081
+      #nodePort: 30054
+
+    - name: dns-tcp
+      port: 53
+      targetPort: 53
+      protocol: TCP
+      #nodePort: 30053
+
+    - name: dns-udp
+      port: 53
+      protocol: UDP
+      targetPort: 53
+      #nodePort: 30053
+
+  selector:
+    {{- include "powerdns.selectorLabels" . | nindent 4 }}
