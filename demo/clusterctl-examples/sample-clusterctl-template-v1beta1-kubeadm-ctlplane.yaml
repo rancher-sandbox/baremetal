@@ -1,0 +1,324 @@
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: ${CLUSTER_NAME}
+  namespace: ${NAMESPACE}
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+      - ${POD_CIDR}
+    services:
+      cidrBlocks:
+      - ${SERVICE_CIDR}
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+    kind: KubeadmControlPlane
+    name: ${CLUSTER_NAME}
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: Metal3Cluster
+    name: ${CLUSTER_NAME}
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: Metal3Cluster
+metadata:
+  name: ${CLUSTER_NAME}
+  namespace: ${NAMESPACE}
+spec:
+  controlPlaneEndpoint:
+    host: ${CLUSTER_APIENDPOINT_HOST}
+    port: ${CLUSTER_APIENDPOINT_PORT}
+  noCloudProvider: true
+---
+apiVersion: ipam.metal3.io/v1alpha1
+kind: IPPool
+metadata:
+  name: provisioning-pool
+  namespace: ${NAMESPACE}
+spec:
+  clusterName: ${CLUSTER_NAME}
+  namePrefix: ${CLUSTER_NAME}-prov
+  pools:
+  - end: ${PROVISIONING_POOL_END}
+    start: ${PROVISIONING_POOL_START}
+  prefix: ${PROVISIONING_POOL_PREFIX}
+---
+apiVersion: ipam.metal3.io/v1alpha1
+kind: IPPool
+metadata:
+  name: baremetalv4-pool
+  namespace: ${NAMESPACE}
+spec:
+  clusterName: ${CLUSTER_NAME}
+  gateway: ${BAREMETAL_POOL_GATEWAY}
+  namePrefix: ${CLUSTER_NAME}-bmv4
+  pools:
+  - end: ${BAREMETAL_POOL_END}
+    start: ${BAREMETAL_POOL_START}
+  prefix: ${BAREMETEAL_POOL_PREFIX}
+---
+apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+kind: KubeadmControlPlane
+metadata:
+  name: ${CLUSTER_NAME}
+  namespace: ${NAMESPACE}
+spec:
+  kubeadmConfigSpec:
+    clusterConfiguration: {}
+    files:
+    - content: |
+        #!/bin/bash
+        while :; do
+          curl -sk https://127.0.0.1:6443/healthz 1>&2 > /dev/null
+          isOk=$?
+          isActive=$(systemctl show -p ActiveState keepalived.service | cut -d'=' -f2)
+          if [ $isOk == "0" ] &&  [ $isActive != "active" ]; then
+            logger 'API server is healthy, however keepalived is not running, starting keepalived'
+            echo 'API server is healthy, however keepalived is not running, starting keepalived'
+            sudo systemctl start keepalived.service
+          elif [ $isOk != "0" ] &&  [ $isActive == "active" ]; then
+            logger 'API server is not healthy, however keepalived running, stopping keepalived'
+            echo 'API server is not healthy, however keepalived running, stopping keepalived'
+            sudo systemctl stop keepalived.service
+          fi
+          sleep 5
+        done
+      owner: root:root
+      path: /usr/local/bin/monitor.keepalived.sh
+      permissions: "0755"
+    - content: |
+        [Unit]
+        Description=Monitors keepalived adjusts status with that of API server
+        After=syslog.target network-online.target
+
+        [Service]
+        Type=simple
+        Restart=always
+        ExecStart=/usr/local/bin/monitor.keepalived.sh
+
+        [Install]
+        WantedBy=multi-user.target
+      owner: root:root
+      path: /lib/systemd/system/monitor.keepalived.service
+    - content: |
+        ! Configuration File for keepalived
+        global_defs {
+            notification_email {
+            sysadmin@example.com
+            support@example.com
+            }
+            notification_email_from lb@example.com
+            smtp_server localhost
+            smtp_connect_timeout 30
+        }
+        vrrp_instance VI_2 {
+            state MASTER
+            interface ens1f0
+            virtual_router_id 2
+            priority 101
+            advert_int 1
+            virtual_ipaddress {
+                ${CLUSTER_APIENDPOINT_HOST}
+            }
+        }
+      path: /etc/keepalived/keepalived.conf
+    - content: |
+        [registries.search]
+        registries = ['docker.io']
+
+        [registries.insecure]
+        registries = ['192.168.75.254:5000']
+      path: /etc/containers/registries.conf.cp
+    initConfiguration:
+      nodeRegistration:
+        criSocket: unix:///var/run/crio/crio.sock
+        kubeletExtraArgs:
+          cgroup-driver: systemd
+          container-runtime: remote
+          container-runtime-endpoint: unix:///var/run/crio/crio.sock
+          feature-gates: AllAlpha=false
+          node-labels: metal3.io/uuid={{ ds.meta_data.uuid }}
+          provider-id: metal3://{{ ds.meta_data.uuid }}
+          runtime-request-timeout: 5m
+        name: '{{ ds.meta_data.name }}'
+    joinConfiguration:
+      controlPlane: {}
+      nodeRegistration:
+        kubeletExtraArgs:
+          cgroup-driver: systemd
+          container-runtime: remote
+          container-runtime-endpoint: unix:///var/run/crio/crio.sock
+          feature-gates: AllAlpha=false
+          node-labels: metal3.io/uuid={{ ds.meta_data.uuid }}
+          provider-id: metal3://{{ ds.meta_data.uuid }}
+          runtime-request-timeout: 5m
+        name: '{{ ds.meta_data.name }}'
+    postKubeadmCommands:
+    ${KUBEADM_CONTROL_PLANE_POST_KUBEADM_COMMANDS}
+    preKubeadmCommands:
+    ${KUBEADM_CONTROL_PLANE_PRE_KUBEADM_COMMANDS}
+    ${KUBEADM_CONTROL_PLANE_SSH_USERS}
+  machineTemplate:
+    infrastructureRef:
+      apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+      kind: Metal3MachineTemplate
+      name: ${CLUSTER_NAME}-controlplane
+    nodeDrainTimeout: 0s
+  replicas: ${CONTROL_PLANE_MACHINE_COUNT}
+  rolloutStrategy:
+    rollingUpdate:
+      maxSurge: 1
+  version: ${KUBERNETES_VERSION}
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: Metal3MachineTemplate
+metadata:
+  name: ${CLUSTER_NAME}-controlplane
+  namespace: ${NAMESPACE}
+spec:
+  template:
+    spec:
+      hostSelector:
+        matchLabels:
+          cluster-role: control-plane
+      dataTemplate:
+        name: ${CLUSTER_NAME}-controlplane-template
+      image:
+        checksum: ${IMAGE_CHECKSUM}
+        checksumType: ${IMAGE_CHECKSUM_TYPE}
+        format: ${IMAGE_FORMAT}
+        url: ${IMAGE_URL}
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: Metal3DataTemplate
+metadata:
+  name: ${CLUSTER_NAME}-controlplane-template
+  namespace: ${NAMESPACE}
+spec:
+  clusterName: ${CLUSTER_NAME}
+  metaData:
+    ipAddressesFromIPPool:
+    - key: provisioningIP
+      name: provisioning-pool
+    objectNames:
+    - key: name
+      object: machine
+    - key: local-hostname
+      object: machine
+    - key: local_hostname
+      object: machine
+    prefixesFromIPPool:
+    - key: provisioningCIDR
+      name: provisioning-pool
+  networkData:
+  ${CONTROL_PLANE_NETWORK_DATA}
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachineDeployment
+metadata:
+  labels:
+    cluster.x-k8s.io/cluster-name: ${CLUSTER_NAME}
+    nodepool: nodepool-0
+  name: ${CLUSTER_NAME}
+  namespace: ${NAMESPACE}
+spec:
+  clusterName: ${CLUSTER_NAME}
+  replicas: ${WORKER_MACHINE_COUNT}
+  selector:
+    matchLabels:
+      cluster.x-k8s.io/cluster-name: ${CLUSTER_NAME}
+      nodepool: nodepool-0
+  template:
+    metadata:
+      labels:
+        cluster.x-k8s.io/cluster-name: ${CLUSTER_NAME}
+        nodepool: nodepool-0
+    spec:
+      bootstrap:
+        configRef:
+          apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+          kind: KubeadmConfigTemplate
+          name: ${CLUSTER_NAME}-workers
+      clusterName: ${CLUSTER_NAME}
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+        kind: Metal3MachineTemplate
+        name: ${CLUSTER_NAME}-workers
+      nodeDrainTimeout: 0s
+      version: ${KUBERNETES_VERSION}
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: Metal3MachineTemplate
+metadata:
+  name: ${CLUSTER_NAME}-workers
+  namespace: ${NAMESPACE}
+spec:
+  template:
+    spec:
+      hostSelector:
+        matchLabels:
+          cluster-role: worker
+      dataTemplate:
+        name: ${CLUSTER_NAME}-workers-template
+      image:
+        checksum: ${IMAGE_CHECKSUM}
+        checksumType: ${IMAGE_CHECKSUM_TYPE}
+        format: ${IMAGE_FORMAT}
+        url: ${IMAGE_URL}
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: Metal3DataTemplate
+metadata:
+  name: ${CLUSTER_NAME}-workers-template
+  namespace: ${NAMESPACE}
+spec:
+  clusterName: ${CLUSTER_NAME}
+  metaData:
+    ipAddressesFromIPPool:
+    - key: provisioningIP
+      name: provisioning-pool
+    objectNames:
+    - key: name
+      object: machine
+    - key: local-hostname
+      object: machine
+    - key: local_hostname
+      object: machine
+    prefixesFromIPPool:
+    - key: provisioningCIDR
+      name: provisioning-pool
+  networkData:
+  ${WORKERS_NETWORK_DATA}
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+kind: KubeadmConfigTemplate
+metadata:
+  name: ${CLUSTER_NAME}-workers
+  namespace: ${NAMESPACE}
+spec:
+  template:
+    spec:
+      files:
+      - content: |
+          [registries.search]
+          registries = ['docker.io']
+
+          [registries.insecure]
+          registries = ['192.168.75.254:5000']
+        path: /etc/containers/registries.conf.cp
+      joinConfiguration:
+        nodeRegistration:
+          criSocket: unix:///var/run/crio/crio.sock
+          kubeletExtraArgs:
+            cgroup-driver: systemd
+            container-runtime: remote
+            container-runtime-endpoint: unix:///var/run/crio/crio.sock
+            feature-gates: AllAlpha=false
+            node-labels: metal3.io/uuid={{ ds.meta_data.uuid }}
+            provider-id: metal3://{{ ds.meta_data.uuid }}
+            runtime-request-timeout: 5m
+          name: '{{ ds.meta_data.name }}'
+      preKubeadmCommands:
+      ${KUBEADM_WORKERS_PRE_KUBEADM_COMMANDS}
+      ${KUBEADM_WORKERS_SSH_USERS}
