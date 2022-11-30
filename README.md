@@ -12,3 +12,14 @@ For anything that looks like it's a missing file in the repo, like `Secrets`, ch
 `ipa-patcher` has a Dockerfile and script that captures the manual stuff I was doing to patch the busted systemd unit in the IPA initramfs.
 
 The script should work on ANY Ubuntu 22.04 host, since all the hardware-specific stuff is done by Ironic. And the only Ubuntu-specific bits are the parts where it installs packages if they're missing.
+
+# External DNS
+
+By default, the external DNS provider is `cloudflare`. This means the environment variable `CLOUDFLARE_API_TOKEN` must be set and it must contains a valid CloudFlare API token where external DNS can utilize it to update DNS records for a given zone.
+
+External DNS can also support `pdns` (PowerDNS) provider. In order to use PowerDNS as external DNS provider, the following environment must be set.
+
+* EXTERNAL_DNS_PROVIDER: must contain the value `pdns`
+* POWERDNS_SERVER_URL: the PowerDNS API endpoint. i.e. `https://10.43.255.2555:8081`
+* POWERDNS_API_KEY: the PowerDNS API key which authorize external DNS to update DNS records for a given zone
+* DNS_DOMAIN: the domain, or DNS zone, to use for all the cluster DNS records

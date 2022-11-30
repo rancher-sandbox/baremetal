@@ -1,0 +1,17 @@
+{{- if env.Getenv "POWERDNS_SERVER_URL" }}
+- op: add
+  path: /spec/template/spec/containers/0/args/-
+  value: --provider=pdns
+- op: add
+  path: /spec/template/spec/containers/0/args/-
+  value: --pdns-server={{ .Env.POWERDNS_SERVER_URL }}
+- op: add
+  path: /spec/template/spec/containers/0/args/-
+  value: --pdns-api-key={{ .Env.POWERDNS_API_KEY }}
+- op: add
+  path: /spec/template/spec/containers/0/args/-
+  value: --domain-filter={{ .Env.DNS_DOMAIN }}
+- op: add
+  path: /spec/template/spec/containers/0/args/-
+  value: --policy=sync
+{{- end }}

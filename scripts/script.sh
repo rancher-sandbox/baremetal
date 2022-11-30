@@ -25,9 +25,11 @@ set -o nounset
 
 : ${CLUSTER_API_NAMESPACE:="capi-system"}
 
+# Valid values are "cloudflare" or "pdns"
+: ${EXTERNAL_DNS_PROVIDER:="cloudflare"}
+
 : ${EXTERNAL_DNS_HELM_RELEASE:="external-dns"}
 : ${EXTERNAL_DNS_NAMESPACE:="external-dns"}
-: ${EXTERNAL_DNS_DOMAIN:="${RANCHER_HOSTNAME}"}
 : ${EXTERNAL_DNS_POLICY:="upsert-only"}
 
 : ${IRONIC_CACHE_IP:="${IRONIC_PROVISIONING_IP}"}
@@ -850,12 +852,39 @@ ExternalDNSIsDeployed()
     HasDeploymentInNamespace "${EXTERNAL_DNS_NAMESPACE}" "${EXTERNAL_DNS_DEPLOYMENT}"
 }
 
+ValidateExternalDNSConfig()
+{
+    case "${EXTERNAL_DNS_PROVIDER}" in
+    "pdns")
+	CHECK_PDNS_SERVER_URL=$(grep 'pdns-server=' ${REPO_ROOT}/deploy/external-dns/${EXTERNAL_DNS_PROVIDER}/patch/Deployment/external-dns.yaml 2>/dev/null || true)
+        if [ -z "${CHECK_PDNS_SERVER_URL}" ]
+        then
+            echo "ERROR: for PowerDNS external DNS provider, the following environment variables must be set before running render-templates.sh: POWERDNS_SERVER_URL, POWERDNS_API_KEY, and DNS_DOMAIN"
+            exit 1
+        fi
+        ;;
+    "cloudflare")
+	CHECK_CLOUDFLARE_API_TOKEN=$(grep 'cloudflare_api_token:' ${REPO_ROOT}/deploy/external-dns/${EXTERNAL_DNS_PROVIDER}/resource/Secret/dns-provider-credentials.yaml 2>/dev/null || true)
+        if [ -z "${CHECK_CLOUDFLARE_API_TOKEN}" ]
+        then
+            echo "ERROR: for CloudFlare external DNS provider, the following environment variables must be set before running render-templates.sh: CLOUDFLARE_API_TOKEN"
+            exit 1
+        fi
+        ;;
+    *)
+        echo "ERROR: ${EXTERNAL_DNS_PROVIDER} is not a supported external DNS provider. The supported providers are \"cloudflare\" or \"pdns\""
+        exit 1
+        ;;
+    esac    
+}
+
 DeployExternalDNS()
 {
     EnsureKubeConfigIsInstalled
     EnsureKustomizeIsInstalled
+    ValidateExternalDNSConfig
     AnnounceLoudly "Deploying external-dns"
-    ${PROG_KUSTOMIZE} build "${REPO_ROOT}/deploy/external-dns" \
+    ${PROG_KUSTOMIZE} build "${REPO_ROOT}/deploy/external-dns/${EXTERNAL_DNS_PROVIDER}" \
         | ${PROG_KUBECTL} "${1:-apply}" -f -
     WaitForExternalDNS
 }

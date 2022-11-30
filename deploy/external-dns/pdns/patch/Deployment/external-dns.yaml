@@ -1,0 +1,15 @@
+- op: add
+  path: /spec/template/spec/containers/0/args/-
+  value: --provider=pdns
+- op: add
+  path: /spec/template/spec/containers/0/args/-
+  value: --pdns-server=http://10.43.0.11:8081
+- op: add
+  path: /spec/template/spec/containers/0/args/-
+  value: --pdns-api-key=abcdef123456
+- op: add
+  path: /spec/template/spec/containers/0/args/-
+  value: --domain-filter=metal.suse.network
+- op: add
+  path: /spec/template/spec/containers/0/args/-
+  value: --policy=sync
