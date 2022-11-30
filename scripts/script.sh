@@ -1216,8 +1216,9 @@ MediaIsDeployed()
 
 DeployMedia()
 {
-    ${PROG_KUSTOMIZE} build "${REPO_ROOT}/deploy/media" \
-        | ${PROG_KUBECTL} "${1:-apply}" -f -
+    ${PROG_HELM} upgrade --install "${MEDIA_DEPLOYMENT}" \
+	"${REPO_ROOT}/helm-charts/media" \
+        --create-namespace --namespace "${MEDIA_NAMESPACE}" --atomic
     WaitForMedia
 }
 
