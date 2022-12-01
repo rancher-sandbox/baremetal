@@ -15,6 +15,7 @@ data:
     {{ range $key, $value := .Values.powerdns.config -}}
     {{ $key }}={{ $value }}
     {{ end }}
+    default-soa-content={{ tpl .Values.zone.default_soa_content . }}
 
 {{ if (.Values.powerdns.api.key) }}
   01-api.conf: |
@@ -44,6 +45,7 @@ data:
     {{ range $key, $value := .Values.powerdns.recursor.config -}}
     {{ $key }}={{ $value }}
     {{ end }}
+    forward-zones={{ tpl .Values.powerdns.recursor.forward_zones .}}
 
 ---
 apiVersion: v1
