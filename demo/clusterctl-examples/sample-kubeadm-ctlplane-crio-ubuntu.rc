@@ -1,0 +1,253 @@
+#
+# Pod and service CIDR for the cluster
+#
+export POD_CIDR=192.168.0.0/18
+export SERVICE_CIDR=10.96.0.0/12
+
+#
+# Cluster API host and port for *workload cluster* to be provisioned.
+# This is *not* the host/IP and port of the management cluster.
+# This is typically the virtual IP for an HA workload cluster.
+#
+# NOTE: make sure to pick an host/IP that is *unique* for each
+# cluster and make sure the host/IP is outside the ranges
+# of any IP pool.
+#
+export CLUSTER_APIENDPOINT_HOST=192.168.75.98
+export CLUSTER_APIENDPOINT_PORT=6443
+
+#
+# IP range for the provisioning IP pool.
+# This should be the (internal) provisioning subnet.
+#
+export PROVISIONING_POOL_START=192.168.75.100
+export PROVISIONING_POOL_END=192.168.75.200
+# this is the CIDR prefix
+export PROVISIONING_POOL_PREFIX=24
+
+#
+# IP range for the baremetal IP pool.
+# This can be either the management or public subnet.
+#
+export BAREMETAL_POOL_GATEWAY=10.84.81.14
+export BAREMETAL_POOL_START=10.84.81.9
+export BAREMETAL_POOL_END=10.84.81.11
+# this is the CIDR prefix
+export BAREMETEAL_POOL_PREFIX=24
+
+#
+# Base image used to provision the workload cluster.
+#
+# NOTE: the IMAGE_CHECKSUM can either be the checksum value or the URL
+# to the checksum value.
+#
+export IMAGE_URL=http://media.suse.baremetal/ubuntu_22.04-efi.qcow2
+export IMAGE_CHECKSUM=http://media.suse.baremetal/ubuntu_22.04-efi.qcow2.md5
+export IMAGE_CHECKSUM_TYPE=md5
+export IMAGE_FORMAT=qcow2
+
+
+########################################
+# Kubeadm Control Plane configurations #
+########################################
+
+#
+# Network configuration. The NIC names must match the ones that were
+# discovered during baremetal host inspection. To see the NIC names
+# of a given baremetal host. Run "kubectl get bmh <baremetal host> -o yaml".
+# The name of the IP pool are coming from the clusterctl template.
+#
+# NOTE: these are YAML snippets to be injected into kubeadmConfigSpec so
+# make sure we keep the 4 spaces indentation for each line.
+#
+export CONTROL_PLANE_NETWORK_DATA="
+    links:
+      ethernets:
+      - id: ens1f0
+        macAddress:
+          fromHostInterface: ens1f0
+        type: phy
+      vlans:
+      - id: ens1f0.1076
+        vlanID: 1076
+        vlanLink: ens1f0
+        macAddress:
+          string: ec:fd:aa:0d:22:5f
+    networks:
+      ipv4:
+      - id: ens1f0
+        ipAddressFromIPPool: provisioning-pool
+        link: ens1f0
+        routes:
+        - gateway:
+            string: 192.168.75.254
+          network: 192.168.10.0
+          prefix: 21
+      - id: ens1f0.1076
+        link: ens1f0.1076
+        ipAddressFromIPPool: baremetalv4-pool
+        routes:
+        - gateway:
+            fromIPPool: baremetalv4-pool
+          network: 0.0.0.0
+    services:
+      dns:
+      - 192.168.75.7
+"
+
+#
+# User accounts for SSH into the workload cluster, for dev purposes.
+# If you don't want to create any user accounts, just set the var to
+# an empty string.
+#
+# Make sure the sshAuthorizedKeys contains *your* SSH key.
+#
+# NOTE: these are YAML snippets to be injected into kubeadmConfigSpec so
+# make sure we keep the 4 spaces indentation for each line.
+#
+export KUBEADM_CONTROL_PLANE_SSH_USERS="
+    users:
+    - name: metal3
+      shell: /bin/bash
+      sshAuthorizedKeys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICXtmbErb2jcl7iVZToyq+IRSgILaPC0V99C1pSsx83S
+      sudo: ALL=(ALL) NOPASSWD:ALL
+"
+
+#
+# Commands to be executed after *kubeadm init* is successfully executed.
+#
+#
+# NOTE: these are YAML snippets to be injected into kubeadmConfigSpec so
+# make sure we keep the 4 spaces indentation for each line.
+#
+export KUBEADM_CONTROL_PLANE_POST_KUBEADM_COMMANDS="
+    - mkdir -p /home/metal3/.kube
+    - chown metal3:metal3 /home/metal3/.kube
+    - cp /etc/kubernetes/admin.conf /home/metal3/.kube/config
+    - systemctl enable --now keepalived
+    - chown metal3:metal3 /home/metal3/.kube/config
+"
+
+#
+# Commands to be executed prior to running *kubeadm init*. For a base image
+# which has nothing on it. These commands are responsible for installing
+# the necessary binaries to bootstrap the control plane.
+#
+# NOTE: these are YAML snippets to be injected into kubeadmConfigSpec so
+# make sure we keep the 4 spaces indentation for each line.
+#
+export KUBEADM_CONTROL_PLANE_PRE_KUBEADM_COMMANDS="
+    - netplan apply
+    - apt update -y
+    - apt install apt-transport-https ca-certificates curl gnupg-agent software-properties-common -y
+    - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+    - add-apt-repository 'deb [arch=amd64] https://download.docker.com/linux/ubuntu jammy stable' -y
+    - curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+    - echo 'deb https://apt.kubernetes.io/ kubernetes-xenial main' > /etc/apt/sources.list.d/kubernetes.list
+    - echo 'deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_22.04/ /'|sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
+    - echo 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/1.23/xUbuntu_22.04/ /'|sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable:cri-o:1.23.list
+    - curl -L https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:1.23/xUbuntu_22.04/Release.key | sudo apt-key add -
+    - curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_22.04/Release.key | sudo apt-key add -
+    - apt update -y
+    - apt install docker-ce docker-ce-cli containerd.io kubelet kubeadm kubectl cri-o cri-o-runc cri-tools keepalived -y
+    - cp /etc/containers/registries.conf /etc/containers/registries.conf.orig
+    - cp /etc/containers/registries.conf.cp /etc/containers/registries.conf
+    - systemctl enable --now docker kubelet crio.service
+    - usermod -aG docker metal3
+    - if (curl -sk --max-time 10 https://{{ example_cluster_virtual_ip }}:6443/healthz); then echo 'keepalived already running';else systemctl start keepalived; fi
+    - systemctl enable --now /lib/systemd/system/monitor.keepalived.service
+"
+
+#########################
+# Workers configuration #
+#########################
+
+#
+# Network configuration. The NIC names must match the ones that were
+# discovered during baremetal host inspection. To see the NIC names
+# of a given baremetal host. Run "kubectl get bmh <baremetal host> -o yaml".
+# The name of the IP pool are coming from the clusterctl template.
+#
+# NOTE: these are YAML snippets to be injected into kubeadmConfigSpec so
+# make sure we keep the 4 spaces indentation for each line.
+#
+export WORKERS_NETWORK_DATA="
+    links:
+      ethernets:
+      - id: eno49
+        macAddress:
+          fromHostInterface: eno49
+        type: phy
+      vlans:
+      - id: eno49.1076
+        vlanID: 1076
+        vlanLink: eno49
+        macAddress:
+          string: 0e:32:f8:62:16:1c
+    networks:
+      ipv4:
+      - id: eno49
+        ipAddressFromIPPool: provisioning-pool
+        link: eno49
+        routes:
+        - gateway:
+            string: 192.168.75.254
+          network: 192.168.10.0
+          prefix: 21
+      - id: eno49.1076
+        link: eno49.1076
+        ipAddressFromIPPool: baremetalv4-pool
+        routes:
+        - gateway:
+            fromIPPool: baremetalv4-pool
+          network: 0.0.0.0
+    services:
+      dns:
+      - 192.168.75.7
+"
+
+#
+# Commands to be executed prior to running *kubeadm init*. For a base image
+# which has nothing on it. These commands are responsible for installing
+# the necessary binaries to bootstrap the control plane.
+#
+# NOTE: these are YAML snippets to be injected into kubeadmConfigSpec so
+# make sure we keep the 6 spaces indentation for each line.
+#
+export KUBEADM_WORKERS_PRE_KUBEADM_COMMANDS="
+      - netplan apply
+      - apt update -y
+      - apt install apt-transport-https ca-certificates curl gnupg-agent software-properties-common -y
+      - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+      - add-apt-repository 'deb [arch=amd64] https://download.docker.com/linux/ubuntu jammy stable' -y
+      - curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+      - echo 'deb https://apt.kubernetes.io/ kubernetes-xenial main' > /etc/apt/sources.list.d/kubernetes.list
+      - echo 'deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_22.04/ /'|sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
+      - echo 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/1.23/xUbuntu_22.04/ /'|sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable:cri-o:1.23.list
+      - curl -L https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:1.23/xUbuntu_22.04/Release.key | sudo apt-key add -
+      - curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_22.04/Release.key | sudo apt-key add -
+      - apt update -y
+      - apt install docker-ce docker-ce-cli containerd.io kubelet kubeadm kubectl cri-o cri-o-runc cri-tools -y
+      - cp /etc/containers/registries.conf /etc/containers/registries.conf.orig
+      - cp /etc/containers/registries.conf.cp /etc/containers/registries.conf
+      - systemctl enable --now docker kubelet crio.service
+      - usermod -aG docker metal3
+"
+
+#
+# User accounts for SSH into the workload cluster, for dev purposes.
+# If you don't want to create any user accounts, just set the var to
+# an empty string.
+#
+# NOTE: these are YAML snippets to be injected into kubeadmConfigSpec so
+# make sure we keep the 4 spaces indentation for each line.
+#
+export KUBEADM_WORKERS_SSH_USERS="
+      users:
+      - name: metal3
+        shell: /bin/bash
+        sshAuthorizedKeys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICXtmbErb2jcl7iVZToyq+IRSgILaPC0V99C1pSsx83S
+        sudo: ALL=(ALL) NOPASSWD:ALL
+"
