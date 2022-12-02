@@ -20,6 +20,6 @@ By default, the external DNS provider is `cloudflare`. This means the environmen
 External DNS can also support `pdns` (PowerDNS) provider. In order to use PowerDNS as external DNS provider, the following environment must be set.
 
 * EXTERNAL_DNS_PROVIDER: must contain the value `pdns`
-* POWERDNS_SERVER_URL: the PowerDNS API endpoint. i.e. `https://10.43.255.2555:8081`
+* POWERDNS_SERVER_URL: the PowerDNS API endpoint. i.e. `https://10.43.255.254:8081`
 * POWERDNS_API_KEY: the PowerDNS API key which authorize external DNS to update DNS records for a given zone
 * DNS_DOMAIN: the domain, or DNS zone, to use for all the cluster DNS records
