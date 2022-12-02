@@ -120,13 +120,14 @@ service:
   #
   # If the static IP is not in the range or is already used by another service, deployment will fail
   # The reason we are using static IP is to avoid redeploying external-dns every time pdns is deployed.
-  ip: 10.43.0.11
+  ip: 10.43.255.254
   port: 8081
 
 zone:
   create: true
   name: suse.baremetal
   ns: ns1
+  default_soa_content: "{{ .Values.zone.ns }}.{{ .Values.zone.name }}. admin.{{ .Values.zone.name}}. 0 10800 3600 604800 3600"
 
 powerdns:
   #For more details for the configuration entries for authoritative server, please check https://doc.powerdns.com/authoritative/settings.html
@@ -137,11 +138,12 @@ powerdns:
     allowfrom: 0.0.0.0/0,::/0
   api:
     key: abcdef123456
-  config: { dnsupdate: yes, loglevel: 6, default-soa-content: "ns1.suse.baremetal. admin.suse.baremetal. 0 10800 3600 604800 3600" }
+  config: { dnsupdate: yes, loglevel: 6 }
   recursor:
     #To resolve internal addresses, you can add to the forward-zones, example: forward-zones: "suse.baremetal=127.0.0.1:54,example.com=100.100.100.100"
+    forward_zones: "{{ .Values.zone.name }}=127.0.0.1:54"
     #For more details for the configuration entries for recursor, please check https://docs.powerdns.com/recursor/settings.html
-    config: { forward-zones: "suse.baremetal=127.0.0.1:54",
+    config: {
               local-address: 0.0.0.0:53,
               dnssec: process-no-validate,
               allow-from: "0.0.0.0/0,::/0",
