@@ -2,7 +2,7 @@
 kind: PersistentVolume
 apiVersion: v1
 metadata:
-  name: {{ include "media.fullname" . }}
+  name: media
   labels:
     {{- include "media.labels" . | nindent 4 }}
 spec:
@@ -12,5 +12,5 @@ spec:
   capacity:
     storage: 5Gi
   hostPath:
-    path: /opt/media
+    path: {{ .Values.mediaVolume.hostPath }}
     type: DirectoryOrCreate
