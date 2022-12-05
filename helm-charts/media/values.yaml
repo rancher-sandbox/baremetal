@@ -91,3 +91,7 @@ volumes:
 volumeMounts:
   - mountPath: /usr/share/nginx/html
     name: assets
+
+# media volume settings
+mediaVolume:
+  hostPath: /opt/media
