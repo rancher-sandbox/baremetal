@@ -1,0 +1,27 @@
+---
+{{- if eq "true" ((env.Getenv "USE_SELF_SIGNED_CERTS" "false") | strings.ToLower ) }}
+kind: Issuer
+apiVersion: cert-manager.io/v1
+metadata:
+  name: internal-self-signed
+  namespace: capm3-system
+spec:
+  selfSigned: {}
+{{- else }}
+kind: Issuer
+apiVersion: cert-manager.io/v1
+metadata:
+  name: letsencrypt-prod
+  namespace: capm3-system
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-private-key
+    solvers:
+      - dns01:
+          cloudflare:
+            apiTokenSecretRef:
+              name: dns-provider-credentials
+              key: cloudflare_api_token
+{{- end }}
