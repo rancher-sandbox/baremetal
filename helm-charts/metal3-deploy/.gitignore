@@ -1,0 +1,5 @@
+# Ignore the Chart.lock
+/Chart.lock
+
+# Ignore charts/ subdirectory - dynamically created by helm dependency update
+/charts/
