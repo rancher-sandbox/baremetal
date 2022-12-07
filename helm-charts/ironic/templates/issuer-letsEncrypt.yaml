@@ -1,0 +1,25 @@
+{{- if eq .Values.tls "ingress" -}}
+  {{- if eq .Values.ingress.tlsSource "letsEncrypt" -}}
+apiVersion: cert-manager.io/v1 
+kind: Issuer
+metadata:
+  name: {{ include "ironic.fullname" . }}
+  labels:
+    {{- include "ironic.labels" . | nindent 4 }}
+spec:
+  {{- $relname := .Release.Name }}      
+  acme:
+  {{- if eq .Values.letsEncrypt.environment "production" }}
+    server: https://acme-v02.api.letsencrypt.org/directory
+  {{- end }}        
+    privateKeySecretRef:
+      name: letsencrypt-private-key 
+    server: https://acme-v02.api.letsencrypt.org/directory        
+    solvers:
+    - dns01:
+        cloudflare:
+          apiTokenSecretRef:
+            key: cloudflare_api_token
+            name: {{ $relname }}-dns-provider-credentials    
+  {{- end -}}
+{{- end -}}  

@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ConfigMap 
+metadata:
+  name: {{ include "ironic.fullname" . }}-bmo
+  labels:
+    {{- include "ironic.labels" . | nindent 4 }}
+data:
+  {{- with .Values.baremetaloperator }}      
+  CACHEURL: {{ tpl .cacheUrl $ }}
+  DEPLOY_KERNEL_URL: {{ tpl .deployKernelUrl $ }}
+  DEPLOY_RAMDISK_URL: {{ tpl .deployRamdiskUrl $ }}
+  DHCP_RANGE: {{ .dhcpRange }}
+  DNSMASQ_BOOT_SERVER_ADDRESS: {{ tpl .bootServerAddress $ }}
+  DNSMASQ_DEFAULT_ROUTER: {{ .dnsmasqDefaultRouter }}
+  DNSMASQ_DNS_SERVER_ADDRESS: {{ .dnsmasqDnsServerAddress }}
+  HTTP_PORT: {{ .httpPort | quote }}
+  IPA_BASEURI: {{ .ipaBaseUri }}
+  IRONIC_API_BASE_URL: {{ tpl .ironicApiUrl $ }}
+  IRONIC_API_HOST: {{ tpl .ironicApiHost $ }}
+  IRONIC_API_HTTPD_SERVER_NAME: {{ tpl .ironicApiHost $ }}
+  IRONIC_BOOT_BASE_URL: {{ tpl .ironicBootBaseUrl $ }}
+  IRONIC_ENDPOINT: {{ tpl .ironicEndpoint $ }}
+  IRONIC_INSPECTOR_BASE_URL: {{ tpl .ironicInspectorUrl $ }} 
+  IRONIC_INSPECTOR_ENDPOINT: {{ tpl .ironicInspectorEndpoint $}}
+  IRONIC_INSPECTOR_HOST: {{ tpl .ironicInspectorHost $ }}
+  IRONIC_INSPECTOR_HTTPD_SERVER_NAME: {{ tpl .ironicInspectorHost $ }}
+  IRONIC_RAMDISK_SSH_KEY: {{ .ironicRamdiskSshKey }}
+  IRONIC_VMEDIA_HTTPD_SERVER_NAME: {{ tpl .bootServerAddress $ }} 
+  PROVISIONING_INTERFACE: {{ .provisioningInterface }} 
+  PROVISIONING_IP: {{ .provisioningIp }}
+  {{- end }}
+  IRONIC_INSPECTOR_VLAN_INTERFACES: all
+  IRONIC_ILO_USE_SWIFT: "false"
+  IRONIC_ILO_USE_WEB_SERVER_FOR_IMAGES: "true"
+  RESTART_CONTAINER_CERTIFICATE_UPDATED: "false"
+  IRONIC_FAST_TRACK: "true"
+  IRONIC_REVERSE_PROXY_SETUP: "false"
+  LISTEN_ALL_INTERFACES: "true"
+  IRONIC_KERNEL_PARAMS: console=ttyS0
+  RESTART_CONTAINER_CERTIFICATE_UPDATED: "false"
+
