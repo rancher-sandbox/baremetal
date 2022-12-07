@@ -141,7 +141,9 @@ powerdns:
   config: { dnsupdate: yes, loglevel: 6 }
   recursor:
     #To resolve internal addresses, you can add to the forward-zones, example: forward-zones: "suse.baremetal=127.0.0.1:54,example.com=100.100.100.100"
+    #Please do not change the port numbers as it impacts the functionality
     forward_zones: "{{ .Values.zone.name }}=127.0.0.1:54"
+    port: 53
     #For more details for the configuration entries for recursor, please check https://docs.powerdns.com/recursor/settings.html
     config: {
               local-address: 0.0.0.0:53,
@@ -152,4 +154,3 @@ powerdns:
               refresh-on-ttl-perc: 95,
               disable-packetcache: yes,
               loglevel: 6  }
-    port: 53
