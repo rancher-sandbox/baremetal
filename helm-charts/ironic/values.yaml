@@ -203,9 +203,9 @@ volumes:
   - name: ironic-data-volume    
     configMapName: ""
   - name: ironic  
-    configMapName: bin
+    configMapName: ironic-bin
   - name: ironic-ipa-downloader  
-    configMapName: ipa-downloader
+    configMapName: ironic-ipa-downloader
 
 baremetaloperator:
   cacheUrl: "http://cache.ironic.{{ .Values.dnsDomain }}/images"      
@@ -239,7 +239,7 @@ ironic:
     command: /bin/rundnsmasq
     type: containers
     envFrom:
-      - configMapRefname: bmo
+      - configMapRefname: ironic-bmo
     image:
       repository: quay.io/metal3-io/ironic
       pullPolicy: Always
@@ -264,10 +264,10 @@ ironic:
     env:
       - name: MARIADB_PASSWORD
         secretKeyRefKey: password
-        secretKeyRefName: baremetal-operator-mariadb
+        secretKeyRefName: ironic-mariadb
       - name: RESTART_CONTAINER_CERTIFICATE_UPDATED
         configMapKeyRefKey: RESTART_CONTAINER_CERTIFICATE_UPDATED
-        configMapKeyRefName: bmo   
+        configMapKeyRefName: ironic-bmo   
     image:
       repository: quay.io/metal3-io/mariadb
       pullPolicy: Always
@@ -283,11 +283,11 @@ ironic:
   - servname: ironic
     command: /bin/runironic
     envFrom:
-      - configMapRefname: bmo
+      - configMapRefname: ironic-bmo
     env:
       - name: MARIADB_PASSWORD
         secretKeyRefKey: password
-        secretKeyRefName: baremetal-operator-mariadb    
+        secretKeyRefName: ironic-mariadb    
     image:
       repository: quay.io/metal3-io/ironic
       pullPolicy: Always
@@ -309,7 +309,7 @@ ironic:
   - servname: ironic-inspector
     command: /bin/runironic-inspector
     envFrom:
-      - configMapRefname: bmo
+      - configMapRefname: ironic-bmo
     image:
       repository: quay.io/metal3-io/ironic
       pullPolicy: Always
@@ -325,7 +325,7 @@ ironic:
   - servname: ironic-httpd
     command: /bin/runhttpd
     envFrom:
-      - configMapRefname: bmo
+      - configMapRefname: ironic-bmo
     image:
       repository: quay.io/metal3-io/ironic
       pullPolicy: Always
@@ -342,7 +342,7 @@ ironic:
     command: /usr/local/bin/get-resource.sh
     type: initContainers
     envFrom:
-      - configMapRefname: bmo
+      - configMapRefname: ironic-bmo
     image:
       repository: quay.io/metal3-io/ironic-ipa-downloader
       pullPolicy: Always  

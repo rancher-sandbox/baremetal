@@ -64,7 +64,7 @@ spec:
           envFrom:
           {{- range .envFrom }}
             - configMapRef:
-                name: {{ $relname }}-{{ .configMapRefname }}
+                name: {{ .configMapRefname }}
           {{- end }}
           {{- end }}
           {{- if .env }}
@@ -75,12 +75,12 @@ spec:
                 {{- if .secretKeyRefKey }}      
                 secretKeyRef:
                   key: {{ .secretKeyRefKey }}
-                  name: {{ $relname }}-{{ .secretKeyRefName }}
+                  name: {{ .secretKeyRefName }}
                 {{- end }}
                 {{- if .configMapKeyRefKey }}
                 configMapKeyRef:
                   key: {{ .configMapKeyRefKey }}
-                  name: {{ $relname }}-{{ .configMapKeyRefName }}
+                  name: {{ .configMapKeyRefName }}
                 {{- end }}   
             {{- end }}   
           {{- end }}  
@@ -144,7 +144,7 @@ spec:
         {{- if .configMapName }}
         configMap:
           defaultMode: 493
-          name : {{ $relname }}-{{ .configMapName }}
+          name : {{ .configMapName }}
         {{- else }}
         emptyDir: {}
         {{- end }}
@@ -153,5 +153,5 @@ spec:
       - name: ironic-certs
         configMap:
           defaultMode: 493
-          name: {{ $relname }}-certs       
+          name: ironic-certs       
       {{- end }}
