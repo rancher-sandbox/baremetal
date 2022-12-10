@@ -65,7 +65,10 @@ The samples were validated based on the following:
    disk-image-create ubuntu vm block-device-efi dhcp-all-interfaces devuser -o ubuntu_22.04-efi
    ```
 2. Two network-connected bare metal nodes, one for the control plane and the
-   other for worker.
+   other for worker. The `BareMetalHost` resource for the bare metal nodes
+   should have been successfully created already. Also, the namespace
+   of the `BareMetalHost` resources must be the same as the to be provisioned
+   workload cluster.
 
 # How-To <a name="how_to" />
 

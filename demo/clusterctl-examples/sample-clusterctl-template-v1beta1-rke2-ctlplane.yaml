@@ -113,12 +113,12 @@ spec:
         }
         vrrp_instance VI_2 {
             state MASTER
-            interface ens1f0
+            interface ${CLUSTER_APIENDPOINT_NIC}
             virtual_router_id 2
             priority 101
             advert_int 1
             virtual_ipaddress {
-                192.168.75.98
+                ${CLUSTER_APIENDPOINT_HOST}
             }
         }
       path: /etc/keepalived/keepalived.conf
