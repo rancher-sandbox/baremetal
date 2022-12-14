@@ -1,0 +1,182 @@
+# The metal3-deploy chart is a parent chart that installs
+# all of the other charts that a metal3 deployment needs,
+# but doesn't actually deploy any services itself.
+
+# The reference examples below are for a single node management cluster,
+# connected to the to network where the baremental nodes (that it will
+# be managing are located) via with it's 'ens4' network interface, with
+# associated IP 192.168.20.5. The metal3 services will be automatically
+# registered as members of the 'suse.baremetal' DNS domain.
+
+# Define a global default for other charts to leverage.
+global:
+
+  # DNS domain that all services will either be members of, or, in the
+  # case of external-dns and pdns, manage.
+  dnsDomain: suse.baremetal
+
+  # specify comma serparate beginning and end of the range of IP
+  # addresses the DHCP server will manage.
+  dhcpRange: 192.168.20.20,192.168.20.80
+
+  # Network interface on which provisioning network can be accessed
+  provisioningInterface: ens4
+
+  # IP Address assigned to network interface on provisioning network
+  provisioningIP: 192.168.20.5
+
+
+#
+# media service
+#
+
+# Override any settings for the metal3 media service here
+metal3-media:
+  ingress:
+    annotations:
+      # The IP to register with external-dns for this service
+      external-dns.alpha.kubernetes.io/target: 192.168.20.5
+
+  # location where media files should be placed so that they are
+  # available to the Ironic deployment services.
+  mediaVolume:
+    hostPath: /opt/media
+
+
+#
+# powerdns service
+#
+
+# Override any settings for the metal3 powerdns service here
+metal3-powerdns:
+
+  ingress:
+    annotations:
+      # The IP to register with external-dns for this service
+      external-dns.alpha.kubernetes.io/target: 192.168.20.5
+
+  powerdns:
+
+    api:
+      # key used to authenticate PowerDNS API requests
+      key: "654321fedcba"
+
+    webserver:
+      # port that PowerDNS webserver listens for API requests on
+      port: 8081
+
+  service:
+
+    # cluster IP that powerDNS service will be accessible at
+    ip: "10.43.255.251"
+
+  zone:
+
+    # DNS domain that PowerDNS will manage
+    # *Must match the global.dnsDomain setting specified above*
+    name: suse.baremetal
+
+
+#
+# external-dns service
+#
+
+# Override any settings for the metal3 external-dns service here
+metal3-external-dns:
+
+  # external-dns will monitor these sources of IP address to name
+  # mappings and automatically add/remove DNS entries as needed.
+  sources:
+    - service
+    - ingress
+
+  # DNS domain(s) that external DNS will manage entries for
+  domainFilters:
+    # *Must match global.dnsDomain setting specified*
+    - suse.baremetal
+
+  # which DNS provider backend to use
+  provider: pdns
+
+  # PowerDNS backend specific config settings
+  pdns:
+
+    # PowerDNS API request URL
+    # *Must match metal3-powerdns.service.ip*
+    apiUrl: "http://10.43.255.251"
+
+    # PowerDNS API request port
+    # *Must match metal3-powerdns.powerdns.webserver.port*
+    apiPort: "8081"
+
+    # PowerDNS API request authentication key
+    # *Must match metal3-powerdns.powerdns.webserver.port*
+    apiKey: "654321fedcba"
+
+
+  # 'sync' allows external-dns to add/remove entries; the default
+  # 'upsert-only' only allows entries to be added with PowerDNS
+  # backend.
+  policy: sync
+
+
+#
+# baremetal-operator service
+#
+
+# Override any settings for the metal3 baremetal-operator service here
+metal3-baremetal-operator:
+
+  ingress:
+    annotations:
+      # The IP to register with external-dns for this service
+      external-dns.alpha.kubernetes.io/target: 192.168.20.5
+
+  baremetaloperator:
+
+    # Specify comma serparate beginning and end of the range of IP
+    # addresses the DHCP server will manage.
+    # *Must match value specified for global.dhcpRange above*
+    dhcpRange: 192.168.20.20,192.168.20.80
+
+    # Network interface on which provisioning network can be accessed
+    # *Must match value specified for global.provisioningInterface above*
+    provisioningInterface: ens4
+
+    # IP Address assigned to network interface on provisioning network
+    # *Must match value specified for global.provisioningIp above*
+    provisioningIp:  192.168.20.5
+
+
+#
+# ironic service
+#
+
+# Override any settings for the metal3 ironic service here
+metal3-ironic:
+  ingress:
+    annotations:
+      # The IP to register with external-dns for this service
+      external-dns.alpha.kubernetes.io/target: 192.168.20.5
+
+  baremetaloperator:
+
+    # IP address of the router associated with the specified DHCP
+    # address range 
+    dnsmasqDefaultRouter: 192.168.21.254
+
+    # IP address of the DNS server that dnsmasq should use
+    dnsmasqDnsServerAddress: 192.168.20.5
+
+    # specify comma serparate beginning and end of the range of IP
+    # addresses the DHCP server will manage.
+    # *Must match value specified for global.dhcpRange above*
+    dhcpRange: 192.168.20.20,192.168.20.80
+
+    # Network interface on which provisioning network can be accessed
+    # *Must match value specified for global.provisioningInterface above*
+    provisioningInterface: ens4
+
+    # IP Address assigned to network interface on provisioning network
+    # *Must match value specified for global.provisioningIp above*
+    provisioningIp: 192.168.20.5
