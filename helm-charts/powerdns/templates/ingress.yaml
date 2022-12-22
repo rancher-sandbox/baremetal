@@ -18,7 +18,7 @@ metadata:
   name: {{ $fullName }}
   labels:
     {{- include "powerdns.labels" . | nindent 4 }}
-  {{- with .Values.ingress.annotations }}
+  {{- with $_ := merge .Values.ingress.annotations $.Values.global.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}

@@ -2,6 +2,18 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+global:
+
+  # specify comma serparate beginning and end of the range of IP
+  # addresses the DHCP server will manage.
+  dhcpRange: 192.168.20.20,192.168.20.80
+
+  # Network interface on which provisioning network can be accessed
+  provisioningInterface: ens4
+
+  # IP Address assigned to network interface on provisioning network
+  provisioningIP: 192.168.20.5
+
 replicaCount: 1
 
 image:
@@ -85,10 +97,7 @@ baremetaloperator:
   cacheUrl: "http://cache.ironic.suse.baremetal/images"
   deployKernelUrl: "http://boot.ironic.suse.baremetal/images/ironic-python-agent.kernel"
   deployRamdiskUrl: "http://boot.ironic.suse.baremetal/images/ironic-python-agent.initramfs"
-  dhcpRange: "192.168.20.20,192.168.20.80"
   httpPort: "6180"
 
   ironicEndpoint: "http://api.ironic.suse.baremetal/v1/"
   ironicInspectorEndpoint: "http://inspector.ironic.suse.baremetal/v1/"
-  provisioningInterface: "ens4"
-  provisioningIp: "192.168.20.5"

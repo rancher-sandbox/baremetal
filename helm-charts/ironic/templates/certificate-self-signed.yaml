@@ -11,6 +11,6 @@ spec:
     name: ironic 
   secretName: ironic-cacert 
   ipAddresses:  
-    - {{ .Values.baremetaloperator.provisioningIp }} 
+    - {{ .Values.global.provisioningIP }} 
   {{- end -}}
 {{- end -}}  
