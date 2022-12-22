@@ -172,6 +172,8 @@ metal3-ironic:
     # addresses the DHCP server will manage.
     # *Must match value specified for global.dhcpRange above*
     dhcpRange: 192.168.20.20,192.168.20.80
+    # If no dhpHosts set, all mac addresses will be acknowledged
+    dhcpHosts: ""
 
     # Network interface on which provisioning network can be accessed
     # *Must match value specified for global.provisioningInterface above*

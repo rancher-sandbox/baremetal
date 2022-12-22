@@ -212,6 +212,9 @@ baremetaloperator:
   deployKernelUrl: "http://boot.ironic.{{ .Values.dnsDomain }}/images/ironic-python-agent.kernel"
   deployRamdiskUrl: "http://boot.ironic.{{ .Values.dnsDomain }}/images/ironic-python-agent.initramfs"
   dhcpRange: "192.168.20.20,192.168.20.80"
+  # If no dhpHosts set, all mac addresses acknowledged
+  dhcpHosts: ""
+
 
   bootServerAddress: "boot.ironic.{{ .Values.dnsDomain }}"
   dnsmasqDefaultRouter: "192.168.21.254"

@@ -10,6 +10,9 @@ data:
   DEPLOY_KERNEL_URL: {{ tpl .deployKernelUrl $ }}
   DEPLOY_RAMDISK_URL: {{ tpl .deployRamdiskUrl $ }}
   DHCP_RANGE: {{ .dhcpRange }}
+  {{ if  .dhcpHosts }}
+  DHCP_HOSTS: {{ .dhcpHosts }}
+  {{ end }}
   DNSMASQ_BOOT_SERVER_ADDRESS: {{ tpl .bootServerAddress $ }}
   DNSMASQ_DEFAULT_ROUTER: {{ .dnsmasqDefaultRouter }}
   DNSMASQ_DNS_SERVER_ADDRESS: {{ .dnsmasqDnsServerAddress }}
