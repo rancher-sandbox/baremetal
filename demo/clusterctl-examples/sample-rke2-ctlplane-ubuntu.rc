@@ -79,7 +79,7 @@ export CONTROL_PLANE_NETWORK_DATA="
         vlanID: 1076
         vlanLink: ens1f0
         macAddress:
-          string: ec:fd:aa:0d:22:5f
+          fromHostInterface: ens1f0
     networks:
       ipv4:
       - id: ens1f0
@@ -147,7 +147,7 @@ export WORKERS_NETWORK_DATA="
         vlanID: 1076
         vlanLink: eno49
         macAddress:
-          string: 0e:32:f8:62:16:1c
+          fromHostInterface: eno49
     networks:
       ipv4:
       - id: eno49
