@@ -2,6 +2,14 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+global:
+  # Global ingress annotations that is shared by all the ingress services.
+  # For example, use it to override extern-dns records.
+  ingress:
+    annotations: {}
+      # The IP to register with external-dns for this service
+      #external-dns.alpha.kubernetes.io/target: 192.168.20.5
+
 image:
   repository: registry.opensuse.org/home/kberger65/bci/containerfile/suse/pdns
   pullPolicy: Always

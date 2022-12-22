@@ -4,13 +4,13 @@ data:
   CACHEURL: {{ .cacheUrl }}
   DEPLOY_KERNEL_URL: {{ .deployKernelUrl }}
   DEPLOY_RAMDISK_URL: {{ .deployRamdiskUrl }}
-  DHCP_RANGE: {{ .dhcpRange }}
   HTTP_PORT: {{ .httpPort | quote }}
   IRONIC_ENDPOINT: {{ .ironicEndpoint }}
   IRONIC_INSPECTOR_ENDPOINT: {{ .ironicInspectorEndpoint }}
-  PROVISIONING_INTERFACE: {{ .provisioningInterface }}
-  PROVISIONING_IP: {{ .provisioningIp }}
 {{- end }}
+  DHCP_RANGE: {{ .Values.global.dhcpRange }}
+  PROVISIONING_INTERFACE: {{ .Values.global.provisioningInterface }}
+  PROVISIONING_IP: {{ .Values.global.provisioningIP }}
   IRONIC_FAST_TRACK: "true"
   RESTART_CONTAINER_CERTIFICATE_UPDATED: "false"
 kind: ConfigMap
