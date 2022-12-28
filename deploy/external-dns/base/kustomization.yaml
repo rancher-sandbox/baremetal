@@ -1,0 +1,4 @@
+namespace: external-dns
+resources:
+  - resource/Namespace/external-dns.yaml
+  - github.com/kubernetes-sigs/external-dns/kustomize?ref=bb2606c50d1f602895795e945891c29f5418dd22

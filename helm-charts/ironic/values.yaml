@@ -1,0 +1,378 @@
+# Default values for ironic.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+global:
+
+  # DNS domain that all services will either be members of, or, in the
+  # case of external-dns and pdns, manage.
+  dnsDomain: suse.baremetal
+
+  # IP address of the router associated with the specified DHCP
+  # address range
+  dnsmasqDefaultRouter: 192.168.21.254
+
+  # specify comma serparate beginning and end of the range of IP
+  # addresses the DHCP server will manage.
+  dhcpRange: 192.168.20.20,192.168.20.80
+
+  # Network interface on which provisioning network can be accessed
+  provisioningInterface: ens4
+
+  # IP Address assigned to network interface on provisioning network
+  provisioningIP: 192.168.20.5
+
+  # Global ingress annotations that is shared by all the ingress services.
+  # For example, use it to override extern-dns records.
+  ingress:
+    annotations: {}
+      # The IP to register with external-dns for this service
+      #external-dns.alpha.kubernetes.io/target: 192.168.20.5
+
+replicaCount: 1
+
+image:
+  repository: quay.io/metal3-io/ironic
+  pullPolicy: Always
+  tag: capm3-v1.1.2
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+service:
+  - type: httpd 
+    port: 6180
+  - type: api
+    port: 6385
+  - type: inspector
+    port: 5050  
+  - type: NodePort 
+
+ingress:
+  enabled: true 
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: "api.ironic.{{ .Values.global.dnsDomain }}"
+      paths:
+        - path: /
+          pathType: Prefix 
+          portname: api
+    - host: "inspector.ironic.{{ .Values.global.dnsDomain }}"
+      paths:
+        - path: /
+          pathType: Prefix
+          portname: inspector
+    - host: "boot.ironic.{{ .Values.global.dnsDomain }}"
+      paths:
+        - path: /
+          pathType: Prefix
+          portname: httpd
+    - host: "cache.ironic.{{ .Values.global.dnsDomain }}"
+      paths:
+        - path: /
+          pathType: Prefix
+          portname: httpd
+
+  # self,letsEncrypt,secrets       
+  tlsSource: self        
+  tls:   
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+  #
+
+letsEncrypt:
+  # email: none@example.com
+  environment: production
+
+#
+# tls
+#   Where to offload the TLS/SSL encryption
+# - ingress (default)
+# - external
+tls: ingress
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+volumeMounts:
+  - mountPath: /shared
+    name: ironic-data-volume
+  - mountPath: /bin/configure-coreos-ipa
+    name: ironic
+    subPath: configure-coreos-ipa
+  - mountPath: /bin/configure-httpd-ipa.sh
+    name: ironic
+    subPath: configure-httpd-ipa.sh
+  - mountPath: /bin/configure-ironic.sh
+    name: ironic
+    subPath: configure-ironic.sh  
+  - mountPath: /bin/coreos-ipa-common.sh
+    name: ironic
+    subPath: coreos-ipa-common.sh
+  - mountPath: /bin/ironic-common.sh
+    name: ironic
+    subPath: ironic-common.sh
+  - mountPath: /bin/rundnsmasq
+    name: ironic
+    subPath: rundnsmasq
+  - mountPath: /bin/runhttpd
+    name: ironic
+    subPath: runhttpd
+  - mountPath: /bin/runironic
+    name: ironic
+    subPath: runironic
+  - mountPath: /bin/runironic-api
+    name: ironic
+    subPath: runironic-api
+  - mountPath: /bin/runironic-conductor
+    name: ironic
+    subPath: runironic-conductor
+  - mountPath: /bin/runironic-exporter
+    name: ironic
+    subPath: runironic-exporter
+  - mountPath: /bin/runironic-inspector
+    name: ironic
+    subPath: runironic-inspector
+  - mountPath: /bin/runlogwatch.sh
+    name: ironic
+    subPath: runlogwatch.sh
+  - mountPath: /bin/tls-common.sh
+    name: ironic
+    subPath: tls-common.sh
+  - mountPath: /etc/dnsmasq.conf.j2
+    name: ironic
+    subPath: dnsmasq.conf.j2
+  - mountPath: /etc/httpd-ironic-api.conf.j2
+    name: ironic
+    subPath: httpd-ironic-api.conf.j2
+  - mountPath: /etc/httpd-vmedia.conf.j2
+    name: ironic
+    subPath: httpd-vmedia.conf.j2
+  - mountPath: /etc/httpd/conf.d/inspector-apache.conf.j2
+    name: ironic
+    subPath: inspector-apache.conf.j2
+  - mountPath: /etc/ironic-inspector/ironic-inspector.conf.j2
+    name: ironic
+    subPath: ironic-inspector.conf.j2
+  - mountPath: /etc/ironic/ironic.conf.j2
+    name: ironic
+    subPath: ironic.conf.j2
+  - mountPath: /tmp/inspector.ipxe.j2
+    name: ironic
+    subPath: inspector.ipxe.j2
+  - mountPath: /tmp/ironic-python-agent.ign.j2
+    name: ironic
+    subPath: ironic-python-agent.ign.j2
+  - mountPath: /usr/local/bin/mkisofs
+    name: ironic
+    subPath: mkisofs
+  - mountPath: /usr/local/bin/get-resource.sh
+    name: ironic-ipa-downloader
+    subPath: get-resource.sh    
+
+certVolumeMounts:
+  - mountPath: /certs/ironic/tls.crt
+    name: ironic-certs
+    subPath: tls.crt
+  - mountPath: /certs/ironic/tls.key
+    name: ironic-certs
+    subPath: tls.key
+  - mountPath: /certs/ironic-inspector/tls.crt
+    name: ironic-certs
+    subPath: tls.crt
+  - mountPath: /certs/ironic-inspector/tls.key
+    name: ironic-certs
+    subPath: tls.key      
+
+volumes:
+  - name: ironic-data-volume    
+    configMapName: ""
+  - name: ironic  
+    configMapName: ironic-bin
+  - name: ironic-ipa-downloader  
+    configMapName: ironic-ipa-downloader
+
+baremetaloperator:
+  cacheUrl: "http://cache.ironic.{{ .Values.global.dnsDomain }}/images"
+  deployKernelUrl: "http://boot.ironic.{{ .Values.global.dnsDomain }}/images/ironic-python-agent.kernel"
+  deployRamdiskUrl: "http://boot.ironic.{{ .Values.global.dnsDomain }}/images/ironic-python-agent.initramfs"
+  # If no dhpHosts set, all mac addresses acknowledged
+  dhcpHosts: ""
+
+  bootServerAddress: "boot.ironic.{{ .Values.global.dnsDomain }}"
+  dnsmasqDnsServerAddress: "{{ .Values.global.provisioningIP }}"
+  httpPort: "6180"
+
+  ipaBaseUri: "http://10.84.144.252/metal3"
+  ironicApiUrl: "http://api.ironic.{{ .Values.global.dnsDomain }}"
+  ironicApiHost: "api.ironic.{{ .Values.global.dnsDomain }}"
+  ironicBootBaseUrl: "http://boot.ironic.{{ .Values.global.dnsDomain }}"
+  ironicEndpoint: "http://api.ironic.{{ .Values.global.dnsDomain }}/v1/"
+  ironicInspectorUrl: "http://inspector.ironic.{{ .Values.global.dnsDomain }}"
+  ironicInspectorEndpoint: "http://inspector.ironic.{{ .Values.global.dnsDomain }}/v1/"
+  ironicInspectorHost: "inspector.ironic.{{ .Values.global.dnsDomain }}"
+  ironicRamdiskSshKey: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHGYaMrmsmLbv3O6Fj+0kg/U8iY7pcbO9HkbN88OAD+5 colstrom@headnode"
+  mariadbPassword: "changeme"   
+  cloudflareApiToken: "foo"
+  ironichostNetwork: true
+
+ironic:
+  - servname: ironic-dnsmasq
+    command: /bin/rundnsmasq
+    type: containers
+    envFrom:
+      - configMapRefname: ironic-bmo
+    image:
+      repository: quay.io/metal3-io/ironic
+      pullPolicy: Always
+      tag: ""    
+    execCommand:
+      - sh
+      - -c
+      - ss -lun | grep :67 && ss -lun | grep :69
+    ports:
+      - containerPort: 67
+        name: dhcp
+        protocol: UDP
+      - containerPort: 69
+        name: tftp
+        protocol: UDP  
+    securityContext:
+      capabilities:
+        add:
+          - NET_ADMIN
+          - NET_RAW    
+  - servname: mariadb
+    env:
+      - name: MARIADB_PASSWORD
+        secretKeyRefKey: password
+        secretKeyRefName: ironic-mariadb
+      - name: RESTART_CONTAINER_CERTIFICATE_UPDATED
+        configMapKeyRefKey: RESTART_CONTAINER_CERTIFICATE_UPDATED
+        configMapKeyRefName: ironic-bmo   
+    image:
+      repository: quay.io/metal3-io/mariadb
+      pullPolicy: Always
+      tag: "" 
+    execCommand:
+      - sh
+      - -c
+      - mysqladmin status -uironic -p$(printenv MARIADB_PASSWORD)  
+    ports:
+      - containerPort: 3306
+        name: mariadb
+        protocol: TCP    
+  - servname: ironic
+    command: /bin/runironic
+    envFrom:
+      - configMapRefname: ironic-bmo
+    env:
+      - name: MARIADB_PASSWORD
+        secretKeyRefKey: password
+        secretKeyRefName: ironic-mariadb    
+    image:
+      repository: quay.io/metal3-io/ironic
+      pullPolicy: Always
+      tag: ""     
+    execCommand:    
+      - /bin/sh
+      - -c
+      - curl -sSf http://127.0.0.1:6385 || curl -sSfk https://127.0.0.1:6385
+    ports:
+      - containerPort: 6385
+        name: api
+        protocol: TCP
+  - servname: ironic-log-watch
+    command: /bin/runlogwatch.sh
+    image:
+      repository: quay.io/metal3-io/ironic
+      pullPolicy: Always
+      tag: ""
+  - servname: ironic-inspector
+    command: /bin/runironic-inspector
+    envFrom:
+      - configMapRefname: ironic-bmo
+    image:
+      repository: quay.io/metal3-io/ironic
+      pullPolicy: Always
+      tag: ""    
+    execCommand:
+      - sh
+      - -c
+      - curl -sSf http://127.0.0.1:5050 || curl -sSf -k https://127.0.0.1:5050
+    ports:
+      - containerPort: 5050
+        name: inspector
+        protocol: TCP
+  - servname: ironic-httpd
+    command: /bin/runhttpd
+    envFrom:
+      - configMapRefname: ironic-bmo
+    image:
+      repository: quay.io/metal3-io/ironic
+      pullPolicy: Always
+      tag: ""     
+    execCommand:  
+      - /bin/sh
+      - -c
+      - curl -sSf http://127.0.0.1:6180/boot.ipxe || curl -sSfk https://127.0.0.1:6180/boot.ipxe
+    ports:
+      - containerPort: 6180
+        name: httpd
+        protocol: TCP      
+  - servname: ironic-ipa-downloader
+    command: /usr/local/bin/get-resource.sh
+    type: initContainers
+    envFrom:
+      - configMapRefname: ironic-bmo
+    image:
+      repository: quay.io/metal3-io/ironic-ipa-downloader
+      pullPolicy: Always  
+      tag: ""
+    volumeMounts:
+      - mountPath: /shared
+        name: ironic-data-volume  
+
+tlscerts:
+  key: "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEAucGy4beWcxV+ruXbV2igUfUaYohU8SDqH6KIwJNAUzrot5uR\nf5gsC6105lfRD5dw7zW4RhMmVtU1HBMs6FIO2DWNPyRwb4slFm3P/tcBRI4Kixrp\nPqrujrI6nXjVI9HbCaEKs3aZpblY3+A6wER+6mm3CLV6msOhzS+0KP560pTXFIAi\n4tAIsL43TG+g2l7WnJKWUDGMlukrz2KPTEwiS3KQaQSZbWvvvpdb4brNo3kbooQ+\nZsSO/2tXjDRCJX7Hsi1QhpVmo7b4aYvMlYHuaqE0FvBRVG8B/WDlDwnmevOEvF/I\nuSS+3xN/6guHTEmkUQ3s0hEnyLSUuqQ79+LQ8QIDAQABAoIBABI7EHNWsU1aLrS7\nmmtZuWJRy+UfvDZuJIw2R3We/hEtFunuOrlrFeePfomc1MfS9SKFAzDdcEXVZwD6\nYM3sP8i4eMRZry9DWMB6xo8cSuOPjTlZysp7vC4FD/ukgEajsfuf8ozqduns5uwR\n9bIpBsu61Fvmc8H8sUSSCfx7/VHtXpcdxDgOmBQUMGya5ZkuHCOXpslEJRO+zz7o\n/xoimu62Ly5XPn9HVnP0DgyYhQLSxLpbvEleVFFC7/m6FtJa1SZNfxa8PNjCK7+d\nLLYMt2fgahZcsM/3/Fc+GU07TcScmgOmVwwTd0khcpq49xNGtdzOYsxF52FiuV3f\nIiZI+IECgYEA9NOLA+zLKAG0Zr828EISWD4FcwZD04r5K96KpBHVrf9a5naSSfb9\nLNCLhxdpEbob+ZYJCQxyZVo+ZgMsYBoePP48MwTiCMin+QKqs6D4tJ9MRDUuXpMC\nUKJoWSFLq9Umt6YHjzMSlEfqoKv6a51EWxFvvrwZNnwjWqEx9XnImUcCgYEAwjwC\nCvzpfTvsV4ZnFvXDXdLwEWvhsHQ4ekzai5TSl0ULAuvSmG/VD4kC1gm9Sr5jM1tt\nkh/yu34KgZaj4YyVvFRQbE2q8gjyzGK0B6IC9XjfDETUxGalhCwRXFp0jrXxyoev\nCvCjOgJvF29HKnrjztcC0Ay07nYx6dY+Djy0YAcCgYAduZV2S4i6+cICe5LbBtqd\nViJpPch8ZbItDl783qF397n8o0bNriw9BbD7HO+H1HXTDtFYBOfawGM1FYuMu38S\nXrfGZgBfmqUySY2aM6Aepfynh2Fy4Bx219EdiTpbyYxi3cirLUNDN5wYF+lWqYiE\nGhDcMpBJGjdcqJedO0UMvwKBgFmby6l8EtBHA/tBM3BBQ7eWaFDxP3bjt2ac7Dp3\nF0zYeoMHfun6tgXrxNYwOhcwjJ2V8Y/3k0lylbBBaivVawMutsewcUwmWrV2V+4p\njUnoUKbdXneZj4TRu9Sqmpl4USuJu3TFndhWZSAfo2pytYSoZ1DKe/KDrvVddNWm\npeSjAoGBALi+PLsGiTxBRDvYUmh2etorjUBQMuZyBsfzrgd45aH9JX07UgWPm5MP\n//VjtSJEzcDOGkwfjbylZ/ze/TqMnhhLFUaU8sQZW8vHGI4M49Dtvtwu66AeGdwa\n8pEzFvtBuQoLhOzE5MWr9J5UTeamwx53DiKWK6/AZwBozsSp/4oZ\n-----END RSA PRIVATE KEY-----\n"
+  crt: "-----BEGIN CERTIFICATE-----\nMIIDATCCAekCFCVaxqdKRic/XTaG21I8D4vQIe7aMA0GCSqGSIb3DQEBCwUAMD0x\nCzAJBgNVBAYTAlVTMQswCQYDVQQIDAJDQTEhMB8GA1UECgwYSW50ZXJuZXQgV2lk\nZ2l0cyBQdHkgTHRkMB4XDTIyMTIwMTAxMjU0OVoXDTMyMTEyODAxMjU0OVowPTEL\nMAkGA1UEBhMCVVMxCzAJBgNVBAgMAkNBMSEwHwYDVQQKDBhJbnRlcm5ldCBXaWRn\naXRzIFB0eSBMdGQwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC5wbLh\nt5ZzFX6u5dtXaKBR9RpiiFTxIOofoojAk0BTOui3m5F/mCwLrXTmV9EPl3DvNbhG\nEyZW1TUcEyzoUg7YNY0/JHBviyUWbc/+1wFEjgqLGuk+qu6OsjqdeNUj0dsJoQqz\ndpmluVjf4DrARH7qabcItXqaw6HNL7Qo/nrSlNcUgCLi0AiwvjdMb6DaXtackpZQ\nMYyW6SvPYo9MTCJLcpBpBJlta+++l1vhus2jeRuihD5mxI7/a1eMNEIlfseyLVCG\nlWajtvhpi8yVge5qoTQW8FFUbwH9YOUPCeZ684S8X8i5JL7fE3/qC4dMSaRRDezS\nESfItJS6pDv34tDxAgMBAAEwDQYJKoZIhvcNAQELBQADggEBAIplgX7Hy/HbCvgX\n9DJwXzePAss1kxHCiJbfpsiGeJv3FaBi/ozg+ledUUNYiCKPRGTd7sKfapvt9xtk\nM2GJOUPuyFjvWNZrzYxnOXI+tm2G86O+8xe1ekX7FxGD/c/CZUWEKroOQzSNTGkN\nDWC9nZwxg8Kz4IIEiMpYui6+toMRXZ+gxOrytaD6bVI6FS3YkAt2LiG4NHlqls8I\nsT9e/hHYdsWQqKmpcAguJ5x2UyxPlxPJRFI1oT2dUTj9KfLPt3sXEaPNpDZAn2Hz\nUzafY2F72e4BPCH2lsdDI6WJ/W/gtyWjpdq5iTxWz8DVzX1D4TPDpU6y6ZJog3nv\n/eFgVWU=\n-----END CERTIFICATE-----\n"      

@@ -1,0 +1,157 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ironic.fullname" . }}
+  labels:
+    {{- include "ironic.labels" . | nindent 4 }}
+spec:
+  minReadySeconds: 10      
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "ironic.selectorLabels" . | nindent 6 }}
+  strategy:
+    type: Recreate    
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "ironic.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- $relname := .Release.Name }}      
+      {{- $imgname := .Values.image.repository }} 
+      {{- $imgtag := .Values.image.tag }}
+      {{- $volmounts := toYaml .Values.volumeMounts | trim | nindent 12}}
+      {{- $vol := toYaml .Values.volumes | trim | nindent 8 }}
+      {{- $certvolmounts := toYaml .Values.certVolumeMounts | trim | nindent 12}}
+      {{- $tlssource := .Values.ingress.tlsSource }}
+
+      {{- if .Values.baremetaloperator.ironichostNetwork }}
+      hostNetwork: {{ .Values.baremetaloperator.ironichostNetwork }}
+      {{- end }}
+
+      {{- range .Values.ironic }}
+      {{- if .type }}
+      {{ .type }}:
+      {{- end }}        
+        - name: {{ .servname }}
+          {{- if .image }}
+          {{- with .image }}
+           {{- if .tag }}
+          image: {{ .repository }}:{{ .tag }}
+           {{- else }}
+          image: {{ .repository }}
+           {{- end }}
+          {{- end }}
+          {{- else }}
+          image: {{ $imgname }}:{{ $imgtag }}
+          {{- end }}
+          imagePullPolicy: Always
+          {{- if .securityContext }}
+          securityContext:
+            {{- toYaml .securityContext | nindent 12 }}
+          {{- end }}
+          {{- if .command }}
+          command:
+            - {{ .command }}
+          {{- end }}
+          {{- if .envFrom }}
+          envFrom:
+          {{- range .envFrom }}
+            - configMapRef:
+                name: {{ .configMapRefname }}
+          {{- end }}
+          {{- end }}
+          {{- if .env }}
+          env:
+            {{- range .env }}      
+            - name: {{ .name }}
+              valueFrom:
+                {{- if .secretKeyRefKey }}      
+                secretKeyRef:
+                  key: {{ .secretKeyRefKey }}
+                  name: {{ .secretKeyRefName }}
+                {{- end }}
+                {{- if .configMapKeyRefKey }}
+                configMapKeyRef:
+                  key: {{ .configMapKeyRefKey }}
+                  name: {{ .configMapKeyRefName }}
+                {{- end }}   
+            {{- end }}   
+          {{- end }}  
+          {{- if .execCommand }}
+          livenessProbe:
+            exec:
+              command:
+              {{- range .execCommand }}
+                - {{ . }}
+              {{- end }}  
+            failureThreshold: 10
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 10
+          {{- end }}   
+          {{- if .ports }}
+          ports:
+          {{- range .ports }}
+            - containerPort: {{ .containerPort }}
+              name: {{ .name }}
+              protocol: {{ .protocol }}
+          {{- end }}
+          {{- end }}
+          {{- if .execCommand }}
+          readinessProbe:
+            exec:
+              command:
+              {{- range .execCommand }}
+                - {{ . }}
+              {{- end }}
+            failureThreshold: 10
+            initialDelaySeconds: 300
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 10
+          {{- end }}    
+          {{- if .volumeMounts }}
+          volumeMounts:
+          {{- range .volumeMounts }}
+            - mountPath: {{ .mountPath }}
+              name: {{ .name }}
+          {{- if .subPath }}
+              subPath: {{ .subPath }}
+          {{- end }}        
+          {{- end }}
+          {{- else }}
+          volumeMounts:
+            {{- $volmounts }}  
+          {{- end }}
+          {{- if eq $tlssource "secrets" }}
+           {{- if or (eq .servname "ironic") (eq .servname "ironic-inspector") (eq .servname "ironic-httpd") }}
+            {{- $certvolmounts }}
+           {{- end }} 
+          {{- end }}
+      {{- end }}    
+   
+      volumes:
+      {{- range .Values.volumes }}
+      - name: {{ .name }}
+        {{- if .configMapName }}
+        configMap:
+          defaultMode: 493
+          name : {{ .configMapName }}
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
+      {{- end -}}
+      {{- if eq $tlssource "secrets" }}
+      - name: ironic-certs
+        configMap:
+          defaultMode: 493
+          name: ironic-certs       
+      {{- end }}

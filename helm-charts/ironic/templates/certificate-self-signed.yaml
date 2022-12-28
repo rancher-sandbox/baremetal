@@ -1,0 +1,16 @@
+{{- if eq .Values.tls "ingress" -}}
+  {{- if eq .Values.ingress.tlsSource "self" -}}
+apiVersion: cert-manager.io/v1 
+kind: Certificate 
+metadata:
+  name: {{ include "ironic.fullname" . }}
+  labels:
+    {{- include "ironic.labels" . | nindent 4 }}
+spec:
+  issuerRef:
+    name: ironic 
+  secretName: ironic-cacert 
+  ipAddresses:  
+    - {{ .Values.global.provisioningIP }} 
+  {{- end -}}
+{{- end -}}  
