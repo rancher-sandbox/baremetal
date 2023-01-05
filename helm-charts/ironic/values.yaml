@@ -33,7 +33,7 @@ replicaCount: 1
 
 image:
   repository: quay.io/metal3-io/ironic
-  pullPolicy: Always
+  pullPolicy: IfNotPresent 
   tag: capm3-v1.1.2
 
 nameOverride: ""
@@ -264,7 +264,7 @@ ironic:
       - configMapRefname: ironic-bmo
     image:
       repository: quay.io/metal3-io/ironic
-      pullPolicy: Always
+      pullPolicy: IfNotPresent
       tag: ""    
     execCommand:
       - sh
@@ -292,7 +292,7 @@ ironic:
         configMapKeyRefName: ironic-bmo   
     image:
       repository: quay.io/metal3-io/mariadb
-      pullPolicy: Always
+      pullPolicy: IfNotPresent
       tag: "" 
     execCommand:
       - sh
@@ -312,7 +312,7 @@ ironic:
         secretKeyRefName: ironic-mariadb    
     image:
       repository: quay.io/metal3-io/ironic
-      pullPolicy: Always
+      pullPolicy: IfNotPresent
       tag: ""     
     execCommand:    
       - /bin/sh
@@ -326,7 +326,7 @@ ironic:
     command: /bin/runlogwatch.sh
     image:
       repository: quay.io/metal3-io/ironic
-      pullPolicy: Always
+      pullPolicy: IfNotPresent
       tag: ""
   - servname: ironic-inspector
     command: /bin/runironic-inspector
@@ -334,7 +334,7 @@ ironic:
       - configMapRefname: ironic-bmo
     image:
       repository: quay.io/metal3-io/ironic
-      pullPolicy: Always
+      pullPolicy: IfNotPresent
       tag: ""    
     execCommand:
       - sh
@@ -350,7 +350,7 @@ ironic:
       - configMapRefname: ironic-bmo
     image:
       repository: quay.io/metal3-io/ironic
-      pullPolicy: Always
+      pullPolicy: IfNotPresent
       tag: ""     
     execCommand:  
       - /bin/sh
@@ -367,7 +367,7 @@ ironic:
       - configMapRefname: ironic-bmo
     image:
       repository: quay.io/metal3-io/ironic-ipa-downloader
-      pullPolicy: Always  
+      pullPolicy: IfNotPresent
       tag: ""
     volumeMounts:
       - mountPath: /shared

@@ -18,7 +18,7 @@ replicaCount: 1
 
 image:
   repository: quay.io/metal3-io/baremetal-operator
-  pullPolicy: Always
+  pullPolicy: IfNotPresent 
   # Overrides the image tag whose default is the chart appVersion.
   tag: "capm3-v1.1.2"
 
