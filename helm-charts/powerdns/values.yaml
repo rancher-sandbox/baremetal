@@ -12,7 +12,7 @@ global:
 
 image:
   repository: registry.opensuse.org/home/kberger65/bci/containerfile/suse/pdns
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
 
 imagePullSecrets: []
 nameOverride: ""

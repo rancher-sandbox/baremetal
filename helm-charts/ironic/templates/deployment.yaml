@@ -26,6 +26,7 @@ spec:
       {{- $relname := .Release.Name }}      
       {{- $imgname := .Values.image.repository }} 
       {{- $imgtag := .Values.image.tag }}
+      {{- $imgpullpolicy := .Values.image.pullPolicy }}
       {{- $volmounts := toYaml .Values.volumeMounts | trim | nindent 12}}
       {{- $vol := toYaml .Values.volumes | trim | nindent 8 }}
       {{- $certvolmounts := toYaml .Values.certVolumeMounts | trim | nindent 12}}
@@ -47,11 +48,12 @@ spec:
            {{- else }}
           image: {{ .repository }}
            {{- end }}
+          imagePullPolicy: {{ .pullPolicy }} 
           {{- end }}
           {{- else }}
           image: {{ $imgname }}:{{ $imgtag }}
+          imagePullPolicy: {{ $imgpullpolicy }}
           {{- end }}
-          imagePullPolicy: Always
           {{- if .securityContext }}
           securityContext:
             {{- toYaml .securityContext | nindent 12 }}
