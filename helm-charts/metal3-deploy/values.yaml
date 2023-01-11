@@ -15,6 +15,14 @@ global:
   # case of external-dns and pdns, manage.
   dnsDomain: suse.baremetal
 
+  dnsPolicy: "None"
+
+  dnsConfig:
+    nameservers:
+    - 10.43.255.254
+    searches:
+    - suse.baremetal
+
   # IP address of the router associated with the specified DHCP
   # address range
   dnsmasqDefaultRouter: 192.168.21.254
@@ -79,7 +87,7 @@ metal3-powerdns:
   service:
 
     # cluster IP that powerDNS service will be accessible at
-    ip: "10.43.255.251"
+    ip: "10.43.255.254"
 
   zone:
 
@@ -114,7 +122,7 @@ metal3-external-dns:
 
     # PowerDNS API request URL
     # *Must match metal3-powerdns.service.ip*
-    apiUrl: "http://10.43.255.251"
+    apiUrl: "http://10.43.255.254"
 
     # PowerDNS API request port
     # *Must match metal3-powerdns.powerdns.webserver.port*
