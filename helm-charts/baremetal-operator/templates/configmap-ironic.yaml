@@ -1,12 +1,12 @@
 apiVersion: v1
 data:
 {{- with .Values.baremetaloperator }}
-  CACHEURL: {{ .cacheUrl }}
-  DEPLOY_KERNEL_URL: {{ .deployKernelUrl }}
-  DEPLOY_RAMDISK_URL: {{ .deployRamdiskUrl }}
+  CACHEURL: {{ tpl .cacheUrl $ }}
+  DEPLOY_KERNEL_URL: {{ tpl .deployKernelUrl $ }}
+  DEPLOY_RAMDISK_URL: {{ tpl .deployRamdiskUrl $ }}
   HTTP_PORT: {{ .httpPort | quote }}
-  IRONIC_ENDPOINT: {{ .ironicEndpoint }}
-  IRONIC_INSPECTOR_ENDPOINT: {{ .ironicInspectorEndpoint }}
+  IRONIC_ENDPOINT: {{ tpl .ironicEndpoint $ }}
+  IRONIC_INSPECTOR_ENDPOINT: {{ tpl .ironicInspectorEndpoint $ }}
 {{- end }}
   DHCP_RANGE: {{ .Values.global.dhcpRange }}
   PROVISIONING_INTERFACE: {{ .Values.global.provisioningInterface }}
