@@ -9,6 +9,10 @@ global:
     annotations: {}
       # The IP to register with external-dns for this service
       #external-dns.alpha.kubernetes.io/target: 192.168.20.5
+  #pdnsIP: 192.168.20.5
+   # set pdnsIP to enable hostNetwork in the pdns container
+   # and bind pdns to port 53 using the pdsnIP address
+
 
 image:
   repository: registry.opensuse.org/home/kberger65/bci/containerfile/suse/pdns
@@ -154,7 +158,6 @@ powerdns:
     port: 53
     #For more details for the configuration entries for recursor, please check https://docs.powerdns.com/recursor/settings.html
     config: {
-              local-address: 0.0.0.0:53,
               dnssec: process-no-validate,
               allow-from: "0.0.0.0/0,::/0",
               max-cache-ttl: 600,
