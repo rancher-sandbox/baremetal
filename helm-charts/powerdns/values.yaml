@@ -11,7 +11,7 @@ global:
       #external-dns.alpha.kubernetes.io/target: 192.168.20.5
 
 image:
-  repository: registry.opensuse.org/home/kberger65/bci/containerfile/suse/pdns
+  repository: registry.opensuse.org/isv/metal3/bci/containerfile/suse/pdns
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
