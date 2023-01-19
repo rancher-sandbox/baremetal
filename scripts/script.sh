@@ -3,6 +3,8 @@
 set -o errexit
 set -o nounset
 
+OS_DISTRIBUTION=$(cat /etc/os-release | grep ^NAME= | sed 's/.*="//g' | sed 's/".*$//g')
+
 ##########################
 # Required Configuration #
 ##########################
@@ -61,8 +63,23 @@ set -o nounset
 ################################
 # This ensures that everything we expect to be in $PATH, actually is.
 
+case "${OS_DISTRIBUTION}" in
+    "Ubuntu")
+        PKG_MGR="apt"
+        BSDTAR_PKG_NAME="libarchive-tools"
+        ;;
+    "openSUSE Leap" | "SLES")
+        PKG_MGR="zypper"
+        BSDTAR_PKG_NAME="bsdtar"
+        ;;
+    *)
+        echo "ERROR: OS distribution ${OS_DISTRIBUTION} is not supported."
+        exit 1
+esac
+
+
 ${PROG_WHICH:="which"} \
-    ${PROG_APT:="apt"} \
+    ${PKG_MGR} \
     ${PROG_AWK:="awk"} \
     ${PROG_CHMOD:="chmod"} \
     ${PROG_CURL:="curl"} \
@@ -438,7 +455,7 @@ PackageIsInstalled()
 InstallPackage()
 {
     AnnounceLoudly "Installing Missing Package -- ${1}"
-    AsPrivilegedUser ${PROG_APT} install -y "${@}"
+    AsPrivilegedUser ${PKG_MGR} install -y "${@}"
 }
 
 EnsurePackageIsInstalled()
@@ -531,7 +548,7 @@ HasReadableFileAt()
 
 ExtractArchive ()
 {
-    EnsurePackageIsInstalled libarchive-tools
+    EnsurePackageIsInstalled ${BSDTAR_PKG_NAME}
     archive="${1}"; shift
     ${PROG_BSDTAR} x --file="${archive}" "${@}"
 }
