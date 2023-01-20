@@ -39,6 +39,9 @@ spec:
               subPath: init-db.sh
             - name: pdns-persistent-storage
               mountPath: /var/lib/pdns
+      {{- with .Values.global.pdnsIP}}
+      hostNetwork: true
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:

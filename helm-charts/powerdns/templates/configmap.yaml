@@ -17,6 +17,7 @@ data:
     {{ end }}
     default-soa-content={{ tpl .Values.zone.default_soa_content . }}
 
+
 {{ if (.Values.powerdns.api.key) }}
   01-api.conf: |
     api=yes
@@ -46,6 +47,7 @@ data:
     {{ $key }}={{ $value }}
     {{ end }}
     forward-zones={{ tpl .Values.powerdns.recursor.forward_zones .}}
+    local-address={{ .Values.global.pdnsIP | default "0.0.0.0"}}:53
 
 ---
 apiVersion: v1
