@@ -15,7 +15,7 @@ global:
 
 
 image:
-  repository: registry.opensuse.org/home/kberger65/bci/containerfile/suse/pdns
+  repository: registry.opensuse.org/isv/metal3/bci/containerfile/suse/pdns
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
