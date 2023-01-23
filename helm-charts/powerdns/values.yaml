@@ -17,6 +17,12 @@ global:
 image:
   repository: registry.opensuse.org/isv/metal3/bci/containerfile/suse/pdns
   pullPolicy: IfNotPresent
+  tag: "4.7.3"
+
+recursor_image:
+  repository: registry.opensuse.org/isv/metal3/bci/containerfile/suse/pdns-recursor
+  pullPolicy: IfNotPresent
+  tag: "4.8.0"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -80,46 +86,51 @@ affinity: {}
 
 # volume mounts
 volumeMounts:
-  - name: pdns-additional-config-dir
-    mountPath: /etc/pdns/pdns.d
+  pdns:
+    - name: pdns-additional-config-dir
+      mountPath: /etc/pdns/pdns.d
+      
+    - name: pdns-persistent-storage
+      mountPath: /var/lib/pdns
 
-  - name: pdns-recursor-config-dir
-    mountPath: /etc/pdns/pdns-recursor.d
-    
-  - name: pdns-persistent-storage
-    mountPath: /var/lib/pdns
+    - name: pdns-data-script
+      mountPath: /script/configure.sh
+      subPath: configure.sh
 
-  - name: pdns-data-script
-    mountPath: /script/configure.sh
-    subPath: configure.sh
+    - name: pdns-init-db-script
+      mountPath: /script/init-db.sh
+      subPath: init-db.sh
+  
+  pdns_recursor:
+    - name: pdns-recursor-config-dir
+      mountPath: /etc/pdns/pdns-recursor.d
 
-  - name: pdns-init-db-script
-    mountPath: /script/init-db.sh
-    subPath: init-db.sh
+
 
 # volumes
 volumes:
-  - name: pdns-additional-config-dir
-    configMap:
-      name: pdns-additional-config-dir
+    - name: pdns-additional-config-dir
+      configMap:
+        name: pdns-additional-config-dir
 
-  - name: pdns-recursor-config-dir
-    configMap:
-      name: pdns-recursor-config-dir
+    - name: pdns-persistent-storage
+      persistentVolumeClaim:
+        claimName: powerdns
 
-  - name: pdns-persistent-storage
-    persistentVolumeClaim:
-      claimName: powerdns
+    - name: pdns-data-script
+      configMap:
+        name: pdns-data-script
+        defaultMode: 0777
 
-  - name: pdns-data-script
-    configMap:
-      name: pdns-data-script
-      defaultMode: 0777
+    - name: pdns-init-db-script
+      configMap:
+        name: pdns-init-db-script
+        defaultMode: 0777
 
-  - name: pdns-init-db-script
-    configMap:
-      name: pdns-init-db-script
-      defaultMode: 0777
+    - name: pdns-recursor-config-dir
+      configMap:
+        name: pdns-recursor-config-dir
+
 
 # Environment Specific Values
 service:
@@ -141,7 +152,10 @@ zone:
   ns: ns1
   default_soa_content: "{{ .Values.zone.ns }}.{{ .Values.zone.name }}. admin.{{ .Values.zone.name}}. 0 10800 3600 604800 3600"
 
+# powerdns auth component running on port 54 and recursor component on port 53.
 powerdns:
+  auth:
+    port: 54
   #For more details for the configuration entries for authoritative server, please check https://doc.powerdns.com/authoritative/settings.html
   webserver:
     address: 0.0.0.0
@@ -154,7 +168,8 @@ powerdns:
   recursor:
     #To resolve internal addresses, you can add to the forward-zones, example: forward-zones: "suse.baremetal=127.0.0.1:54,example.com=100.100.100.100"
     #Please do not change the port numbers as it impacts the functionality
-    forward_zones: "{{ .Values.zone.name }}=127.0.0.1:54"
+    #forward_zones: "{{ .Values.zone.name }}=127.0.0.1:54"
+    forward_zones: "{{ .Values.zone.name }}={{ .Values.service.ip }}:{{ .Values.powerdns.auth.port}}"
     port: 53
     #For more details for the configuration entries for recursor, please check https://docs.powerdns.com/recursor/settings.html
     config: {

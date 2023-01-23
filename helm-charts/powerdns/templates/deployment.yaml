@@ -43,12 +43,28 @@ spec:
       hostNetwork: true
       {{- end }}
       containers:
-        - name: {{ .Chart.Name }}
+        - name: {{ .Chart.Name }}-recursor
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.recursor_image.repository }}:{{ .Values.recursor_image.tag }}"
+          imagePullPolicy: {{ .Values.recursor_image.pullPolicy }}
+          {{- with .Values.volumeMounts.pdns_recursor }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - containerPort: {{ .Values.powerdns.recursor.port }}
+              protocol: TCP
+            - containerPort: {{ .Values.powerdns.recursor.port }}
+              protocol: UDP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+        - name: {{ .Chart.Name }}-auth
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- with .Values.volumeMounts }}
+          {{- with .Values.volumeMounts.pdns }}
           volumeMounts:
             {{- toYaml . | nindent 12 }}
           {{- end }}
@@ -61,9 +77,9 @@ spec:
           ports:
             - containerPort: {{ .Values.powerdns.webserver.port }}
               protocol: TCP
-            - containerPort: {{ .Values.powerdns.recursor.port }}
+            - containerPort: {{ .Values.powerdns.auth.port }}
               protocol: TCP
-            - containerPort: {{ .Values.powerdns.recursor.port }}
+            - containerPort: {{ .Values.powerdns.auth.port }}
               protocol: UDP
           readinessProbe:
             httpGet:
