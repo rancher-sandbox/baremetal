@@ -79,6 +79,15 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
+# If using the pdnsIP and running in a multi-node kubernetes
+# cluster, we need to "pin" the pdns containers to the given
+# host where the pdnsIP exists. Uncomment the nodeSelector
+# here and update the hostanme accordingly.
+#nodeSelector: 
+  #kubernetes.io/hostname: "csrancher-n2"
+
+# Comment this out when using pdnsIP AND running in a multi-node
+# kubernetes cluster and using the nodeSelector above.
 nodeSelector: {}
 
 tolerations: []

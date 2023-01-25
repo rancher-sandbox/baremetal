@@ -128,6 +128,15 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
+# In a multi-node kubernetes cluster, we need to "pin" the
+# ironic containers to the given host where the
+# provisioningIP exists. Uncomment the nodeSelector
+# here and update the hostanme accordingly.
+#nodeSelector: 
+  #kubernetes.io/hostname: "csrancher-n1"
+
+# Comment this out when running in a multi-node kubernetes cluster
+# and using the nodeSelector above.
 nodeSelector: {}
 
 tolerations: []
