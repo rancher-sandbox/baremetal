@@ -100,6 +100,12 @@ metal3-powerdns:
     # *Must match the global.dnsDomain setting specified above*
     name: suse.baremetal
 
+  # If using the pdnsIP and running in a multi-node kubernetes
+  # cluster, we need to "pin" the pdns containers to the given
+  # host where the pdnsIP exists. Uncomment the nodeSelector
+  # here and update the hostanme accordingly.
+  #nodeSelector: 
+    #kubernetes.io/hostname: "my-node"
 
 #
 # external-dns service
@@ -175,3 +181,10 @@ metal3-ironic:
     # The base URL to download IPA images (i.e. ironic-python-agent.tar 
     # and ironic-python-agent.tar.md5).
     ipaBaseUri: "http://10.84.144.252/metal3"
+
+  # In a multi-node kubernetes cluster, we need to "pin" the
+  # ironic containers to the given host where the
+  # provisioningIP exists. Uncomment the nodeSelector
+  # here and update the hostanme accordingly.
+  #nodeSelector: 
+    #kubernetes.io/hostname: "my-node"
