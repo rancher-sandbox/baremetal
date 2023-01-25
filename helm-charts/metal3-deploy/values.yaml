@@ -37,6 +37,11 @@ global:
   # IP Address assigned to network interface on provisioning network
   provisioningIP: 192.168.20.5
 
+  # set pdnsIP to enable hostNetwork in the pdns-recursor container
+  # and bind pdns-recursor to port 53 using the pdnsIP address
+
+  #pdnsIP: 192.168.20.5
+
   # Global ingress annotations that is shared by all the ingress services.
   # For example, use it to override extern-dns records.
   ingress:

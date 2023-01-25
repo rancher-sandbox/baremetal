@@ -9,10 +9,11 @@ global:
     annotations: {}
       # The IP to register with external-dns for this service
       #external-dns.alpha.kubernetes.io/target: 192.168.20.5
-  #pdnsIP: 192.168.20.5
-   # set pdnsIP to enable hostNetwork in the pdns container
-   # and bind pdns to port 53 using the pdsnIP address
 
+  # set pdnsIP to enable hostNetwork in the pdns-recursor container
+  # and bind pdns-recursor to port 53 using the pdnsIP address
+
+  #pdnsIP: 192.168.20.5
 
 image:
   repository: registry.opensuse.org/isv/metal3/bci/containerfile/suse/pdns
