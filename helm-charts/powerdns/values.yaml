@@ -15,6 +15,15 @@ global:
 
   #pdnsIP: 192.168.20.5
 
+  # If running in a multi-node kubernetes cluster, "pin" the pdns containers
+  # to the given host where the pdnsIP exists. Uncomment the nodeSelector
+  # and update the hostname accordingly.
+  #nodeSelector: 
+    #kubernetes.io/hostname: "my-hostname2"
+
+  # Comment this out when pinning the pdns containers to a specfic host.
+  nodeSelector: {}
+
 image:
   repository: registry.opensuse.org/isv/metal3/bci/containerfile/suse/pdns
   pullPolicy: IfNotPresent
@@ -78,17 +87,6 @@ resources: {}
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
-
-# If using the pdnsIP and running in a multi-node kubernetes
-# cluster, we need to "pin" the pdns containers to the given
-# host where the pdnsIP exists. Uncomment the nodeSelector
-# here and update the hostanme accordingly.
-#nodeSelector: 
-  #kubernetes.io/hostname: "csrancher-n2"
-
-# Comment this out when using pdnsIP AND running in a multi-node
-# kubernetes cluster and using the nodeSelector above.
-nodeSelector: {}
 
 tolerations: []
 

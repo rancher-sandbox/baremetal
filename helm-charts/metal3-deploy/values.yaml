@@ -17,6 +17,11 @@ global:
 
   dnsPolicy: "None"
 
+  # set pdnsIP to enable hostNetwork in the pdns-recursor container
+  # and bind pdns-recursor to port 53 using the pdnsIP address
+  #pdnsIP: 192.168.20.5
+
+  # If using pdnsIP, update the nameservers to the pdnsIP address
   dnsConfig:
     nameservers:
     - 10.43.255.254
@@ -26,6 +31,10 @@ global:
   # IP address of the router associated with the specified DHCP
   # address range
   dnsmasqDefaultRouter: 192.168.21.254
+
+  # IP address of the dns server to be provided with DHCP
+  # response
+  dnsmasqDNSServer: 192.168.20.5
 
   # specify comma serparate beginning and end of the range of IP
   # addresses the DHCP server will manage.
@@ -37,17 +46,19 @@ global:
   # IP Address assigned to network interface on provisioning network
   provisioningIP: 192.168.20.5
 
-  # set pdnsIP to enable hostNetwork in the pdns-recursor container
-  # and bind pdns-recursor to port 53 using the pdnsIP address
-
-  #pdnsIP: 192.168.20.5
-
   # Global ingress annotations that is shared by all the ingress services.
   # For example, use it to override extern-dns records.
   ingress:
     annotations: {}
       # The IP to register with external-dns for this service
       #external-dns.alpha.kubernetes.io/target: 192.168.20.5
+
+  # In a multi-node cluster use the node selector to ensure the pods
+  # all run on the same host where the dnsmasqDNSServer and provisioningIP
+  # and /opt/media exist. Uncomment the nodeSelector and update the
+  # hostname accordingly.
+  #nodeSelector:
+    #kubernetes.io/hostname: "csrancher-n1"
 
 
 #
@@ -99,13 +110,6 @@ metal3-powerdns:
     # DNS domain that PowerDNS will manage
     # *Must match the global.dnsDomain setting specified above*
     name: suse.baremetal
-
-  # If using the pdnsIP and running in a multi-node kubernetes
-  # cluster, we need to "pin" the pdns containers to the given
-  # host where the pdnsIP exists. Uncomment the nodeSelector
-  # here and update the hostanme accordingly.
-  #nodeSelector: 
-    #kubernetes.io/hostname: "my-node"
 
 #
 # external-dns service
@@ -181,10 +185,3 @@ metal3-ironic:
     # The base URL to download IPA images (i.e. ironic-python-agent.tar 
     # and ironic-python-agent.tar.md5).
     ipaBaseUri: "http://10.84.144.252/metal3"
-
-  # In a multi-node kubernetes cluster, we need to "pin" the
-  # ironic containers to the given host where the
-  # provisioningIP exists. Uncomment the nodeSelector
-  # here and update the hostanme accordingly.
-  #nodeSelector: 
-    #kubernetes.io/hostname: "my-node"

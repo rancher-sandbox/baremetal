@@ -11,6 +11,10 @@ global:
   # IP address of the router associated with the specified DHCP
   # address range
   dnsmasqDefaultRouter: 192.168.21.254
+  
+  # IP address of the dns server to be provided with DHCP
+  # response
+  dnsmasqDNSServer: 192.168.20.5
 
   # specify comma serparate beginning and end of the range of IP
   # addresses the DHCP server will manage.
@@ -28,6 +32,24 @@ global:
     annotations: {}
       # The IP to register with external-dns for this service
       #external-dns.alpha.kubernetes.io/target: 192.168.20.5
+
+  # If using pdnsIP for to set powerdns to use hostNetwork, update
+  # the nameservers to the pdnsIP address
+  dnsConfig:
+    nameservers:
+    - 10.43.255.254
+    searches:
+    - suse.baremetal
+
+  # In a multi-node kubernetes cluster, we need to "pin" the
+  # ironic containers to the given host where the
+  # provisioningIP exists. Uncomment the nodeSelector
+  # here and update the hostname accordingly.
+  #nodeSelector: 
+    #kubernetes.io/hostname: "csrancher-n1"
+
+  # Comment this out when pinning the pdns containers to a specfic host.
+  nodeSelector: {}
 
 replicaCount: 1
 
@@ -127,17 +149,6 @@ autoscaling:
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
-
-# In a multi-node kubernetes cluster, we need to "pin" the
-# ironic containers to the given host where the
-# provisioningIP exists. Uncomment the nodeSelector
-# here and update the hostanme accordingly.
-#nodeSelector: 
-  #kubernetes.io/hostname: "csrancher-n1"
-
-# Comment this out when running in a multi-node kubernetes cluster
-# and using the nodeSelector above.
-nodeSelector: {}
 
 tolerations: []
 
@@ -249,7 +260,7 @@ baremetaloperator:
   dhcpHosts: ""
 
   bootServerAddress: "boot.ironic.{{ .Values.global.dnsDomain }}"
-  dnsmasqDnsServerAddress: "{{ .Values.global.provisioningIP }}"
+  dnsmasqDnsServerAddress: "{{ .Values.global.dnsmasqDNSServer }}"
   httpPort: "6180"
 
   ipaBaseUri: "http://10.84.144.252/metal3"
