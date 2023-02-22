@@ -15,7 +15,9 @@ data:
   DNSMASQ_BOOT_SERVER_ADDRESS: {{ tpl .bootServerAddress $ }}
   DNSMASQ_DNS_SERVER_ADDRESS: {{ tpl .dnsmasqDnsServerAddress $ }}
   HTTP_PORT: {{ .httpPort | quote }}
+  {{ if .ipaBaseUri }}
   IPA_BASEURI: {{ .ipaBaseUri }}
+  {{ end }}
   IRONIC_API_BASE_URL: {{ tpl .ironicApiUrl $ }}
   IRONIC_API_HOST: {{ tpl .ironicApiHost $ }}
   IRONIC_API_HTTPD_SERVER_NAME: {{ tpl .ironicApiHost $ }}

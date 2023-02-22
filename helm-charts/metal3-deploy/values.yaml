@@ -187,6 +187,8 @@ metal3-ironic:
     # If no dhpHosts set, all mac addresses will be acknowledged
     dhcpHosts: ""
 
-    # The base URL to download IPA images (i.e. ironic-python-agent.tar 
-    # and ironic-python-agent.tar.md5).
-    ipaBaseUri: "http://10.84.144.252/metal3"
+    # The base URL to download IPA images (i.e. ironic-python-agent.tar
+    # and ironic-python-agent.tar.md5). If not set, we install the
+    # opensuse based IPA image
+    #ipaBaseUri: "https://images.rdoproject.org/centos8/master/rdo_trunk/current-tripleo"
+

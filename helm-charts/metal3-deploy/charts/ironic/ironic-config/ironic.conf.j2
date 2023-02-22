@@ -9,12 +9,12 @@ enabled_boot_interfaces = ipxe,ilo-ipxe,pxe,ilo-pxe,fake,redfish-virtual-media,i
 enabled_deploy_interfaces = direct,fake,ramdisk,custom-agent
 # NOTE(dtantsur): when changing this, make sure to update the driver
 # dependencies in Dockerfile.
-enabled_hardware_types = ipmi,idrac,irmc,fake-hardware,redfish,ibmc,manual-management,ilo,ilo5
+enabled_hardware_types = ipmi,idrac,irmc,fake-hardware,redfish,manual-management,ilo,ilo5
 enabled_inspect_interfaces = inspector,idrac,irmc,fake,redfish,ilo
-enabled_management_interfaces = ipmitool,idrac,irmc,fake,redfish,idrac-redfish,ibmc,ilo,ilo5,noop
-enabled_power_interfaces = ipmitool,idrac,irmc,fake,redfish,idrac-redfish,ibmc,ilo
-enabled_raid_interfaces = no-raid,irmc,agent,fake,ibmc,idrac-wsman,ilo5
-enabled_vendor_interfaces = no-vendor,ipmitool,idrac,idrac-redfish,redfish,ilo,fake,ibmc
+enabled_management_interfaces = ipmitool,idrac,irmc,fake,redfish,idrac-redfish,ilo,ilo5,noop
+enabled_power_interfaces = ipmitool,idrac,irmc,fake,redfish,idrac-redfish,ilo
+enabled_raid_interfaces = no-raid,irmc,agent,fake,idrac-wsman,ilo5
+enabled_vendor_interfaces = no-vendor,ipmitool,idrac,idrac-redfish,redfish,ilo,fake
 {% if env.IRONIC_EXPOSE_JSON_RPC | lower == "true" %}
 rpc_transport = json-rpc
 {% else %}
@@ -44,7 +44,7 @@ isolinux_bin = /usr/share/syslinux/isolinux.bin
 
 # NOTE(dtantsur): this path is specific to the GRUB image that is built into
 # the ESP provided in [conductor]bootloader.
-grub_config_path = EFI/centos/grub.cfg
+grub_config_path = EFI/BOOT/grub.cfg
 
 [agent]
 deploy_logs_collect = always
