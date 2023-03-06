@@ -25,12 +25,12 @@ global:
   nodeSelector: {}
 
 image:
-  repository: registry.opensuse.org/isv/metal3/bci/containerfile/suse/pdns
+  repository: registry.opensuse.org/isv/metal3/bci/powerdns/containerfile/suse/pdns
   pullPolicy: IfNotPresent
   tag: "4.6.1"
 
 recursor_image:
-  repository: registry.opensuse.org/isv/metal3/bci/containerfile/suse/pdns-recursor
+  repository: registry.opensuse.org/isv/metal3/bci/powerdns/containerfile/suse/pdns-recursor
   pullPolicy: IfNotPresent
   tag: "4.6.1"
 
