@@ -118,6 +118,11 @@ metal3-powerdns:
 # Override any settings for the metal3 external-dns service here
 metal3-external-dns:
 
+  image:
+    registry: registry.opensuse.org
+    repository: isv/metal3/bci/external-dns/containerfile/suse/external-dns
+    tag: "0.13.2"
+
   # external-dns will monitor these sources of IP address to name
   # mappings and automatically add/remove DNS entries as needed.
   sources:
