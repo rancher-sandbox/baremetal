@@ -27,12 +27,12 @@ global:
 image:
   repository: registry.opensuse.org/isv/metal3/bci/containerfile/suse/pdns
   pullPolicy: IfNotPresent
-  tag: "4.7.3"
+  tag: "4.6.1"
 
 recursor_image:
   repository: registry.opensuse.org/isv/metal3/bci/containerfile/suse/pdns-recursor
   pullPolicy: IfNotPresent
-  tag: "4.8.0"
+  tag: "4.6.1"
 
 imagePullSecrets: []
 nameOverride: ""
