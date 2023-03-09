@@ -1,0 +1,18 @@
+dependencies:
+- name: media
+  repository: ""
+  version: 0.1.0
+- name: powerdns
+  repository: ""
+  version: 0.1.0
+- name: external-dns
+  repository: https://charts.bitnami.com/bitnami
+  version: 6.12.1
+- name: baremetal-operator
+  repository: ""
+  version: 0.1.1
+- name: ironic
+  repository: ""
+  version: 0.1.1
+digest: sha256:d6472cb61930dc1bc433c6197ed76334653059cd2c5e20bbae2a83563569c366
+generated: "2023-03-09T00:10:28.877446707Z"
