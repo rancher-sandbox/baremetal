@@ -115,7 +115,7 @@ spec:
                 - {{ . }}
               {{- end }}
             failureThreshold: 10
-            initialDelaySeconds: 300
+            initialDelaySeconds: 30
             periodSeconds: 30
             successThreshold: 1
             timeoutSeconds: 10
