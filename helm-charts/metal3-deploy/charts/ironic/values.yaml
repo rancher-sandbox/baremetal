@@ -54,9 +54,9 @@ global:
 replicaCount: 1
 
 image:
-  repository: quay.io/metal3-io/ironic
-  pullPolicy: IfNotPresent 
-  tag: capm3-v1.1.2
+  repository: registry.opensuse.org/isv/metal3/bci/ironic/containerfile/suse/ironic
+  pullPolicy: IfNotPresent
+  tag: 21.1.1
 
 nameOverride: ""
 fullnameOverride: ""
@@ -228,7 +228,7 @@ volumeMounts:
     subPath: mkisofs
   - mountPath: /usr/local/bin/get-resource.sh
     name: ironic-ipa-downloader
-    subPath: get-resource.sh    
+    subPath: get-resource.sh
 
 certVolumeMounts:
   - mountPath: /certs/ironic/tls.crt
@@ -263,7 +263,10 @@ baremetaloperator:
   dnsmasqDnsServerAddress: "{{ .Values.global.dnsmasqDNSServer }}"
   httpPort: "6180"
 
-  ipaBaseUri: "http://10.84.144.252/metal3"
+  # The base URL to download IPA images (i.e. ironic-python-agent.tar
+  # and ironic-python-agent.tar.md5). If not set, we install the
+  # opensuse based IPA image
+  #ipaBaseUri: "https://images.rdoproject.org/centos8/master/rdo_trunk/current-tripleo"
   ironicApiUrl: "http://api.ironic.{{ .Values.global.dnsDomain }}"
   ironicApiHost: "api.ironic.{{ .Values.global.dnsDomain }}"
   ironicBootBaseUrl: "http://boot.ironic.{{ .Values.global.dnsDomain }}"
@@ -283,9 +286,9 @@ ironic:
     envFrom:
       - configMapRefname: ironic-bmo
     image:
-      repository: quay.io/metal3-io/ironic
+      repository: registry.opensuse.org/isv/metal3/bci/ironic/containerfile/suse/ironic
       pullPolicy: IfNotPresent
-      tag: ""    
+      tag: 21.1.1
     execCommand:
       - sh
       - -c
@@ -311,9 +314,9 @@ ironic:
         configMapKeyRefKey: RESTART_CONTAINER_CERTIFICATE_UPDATED
         configMapKeyRefName: ironic-bmo   
     image:
-      repository: quay.io/metal3-io/mariadb
+      repository: registry.opensuse.org/home/mbelur/bci/ironic/containerfile/suse/mariadb
       pullPolicy: IfNotPresent
-      tag: "" 
+      tag: 10.6.7
     execCommand:
       - sh
       - -c
@@ -331,9 +334,9 @@ ironic:
         secretKeyRefKey: password
         secretKeyRefName: ironic-mariadb    
     image:
-      repository: quay.io/metal3-io/ironic
+      repository: registry.opensuse.org/isv/metal3/bci/ironic/containerfile/suse/ironic
       pullPolicy: IfNotPresent
-      tag: ""     
+      tag: 21.1.1
     execCommand:    
       - /bin/sh
       - -c
@@ -345,17 +348,17 @@ ironic:
   - servname: ironic-log-watch
     command: /bin/runlogwatch.sh
     image:
-      repository: quay.io/metal3-io/ironic
+      repository: registry.opensuse.org/isv/metal3/bci/ironic/containerfile/suse/ironic
       pullPolicy: IfNotPresent
-      tag: ""
+      tag: 21.1.1
   - servname: ironic-inspector
     command: /bin/runironic-inspector
     envFrom:
       - configMapRefname: ironic-bmo
     image:
-      repository: quay.io/metal3-io/ironic
+      repository: registry.opensuse.org/isv/metal3/bci/ironic/containerfile/suse/ironic
       pullPolicy: IfNotPresent
-      tag: ""    
+      tag: 21.1.1
     execCommand:
       - sh
       - -c
@@ -369,9 +372,9 @@ ironic:
     envFrom:
       - configMapRefname: ironic-bmo
     image:
-      repository: quay.io/metal3-io/ironic
+      repository: registry.opensuse.org/isv/metal3/bci/ironic/containerfile/suse/ironic
       pullPolicy: IfNotPresent
-      tag: ""     
+      tag: 21.1.1
     execCommand:  
       - /bin/sh
       - -c
@@ -384,14 +387,14 @@ ironic:
     command: /usr/local/bin/get-resource.sh
     type: initContainers
     envFrom:
-      - configMapRefname: ironic-bmo
+      - configMapRefname: ironic-ipa-downloader
     image:
-      repository: quay.io/metal3-io/ironic-ipa-downloader
+      repository: registry.opensuse.org/isv/metal3/bci/ironic/containerfile/suse/ironic-ipa-downloader
       pullPolicy: IfNotPresent
       tag: ""
     volumeMounts:
       - mountPath: /shared
-        name: ironic-data-volume  
+        name: ironic-data-volume
 
 tlscerts:
   key: "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEAucGy4beWcxV+ruXbV2igUfUaYohU8SDqH6KIwJNAUzrot5uR\nf5gsC6105lfRD5dw7zW4RhMmVtU1HBMs6FIO2DWNPyRwb4slFm3P/tcBRI4Kixrp\nPqrujrI6nXjVI9HbCaEKs3aZpblY3+A6wER+6mm3CLV6msOhzS+0KP560pTXFIAi\n4tAIsL43TG+g2l7WnJKWUDGMlukrz2KPTEwiS3KQaQSZbWvvvpdb4brNo3kbooQ+\nZsSO/2tXjDRCJX7Hsi1QhpVmo7b4aYvMlYHuaqE0FvBRVG8B/WDlDwnmevOEvF/I\nuSS+3xN/6guHTEmkUQ3s0hEnyLSUuqQ79+LQ8QIDAQABAoIBABI7EHNWsU1aLrS7\nmmtZuWJRy+UfvDZuJIw2R3We/hEtFunuOrlrFeePfomc1MfS9SKFAzDdcEXVZwD6\nYM3sP8i4eMRZry9DWMB6xo8cSuOPjTlZysp7vC4FD/ukgEajsfuf8ozqduns5uwR\n9bIpBsu61Fvmc8H8sUSSCfx7/VHtXpcdxDgOmBQUMGya5ZkuHCOXpslEJRO+zz7o\n/xoimu62Ly5XPn9HVnP0DgyYhQLSxLpbvEleVFFC7/m6FtJa1SZNfxa8PNjCK7+d\nLLYMt2fgahZcsM/3/Fc+GU07TcScmgOmVwwTd0khcpq49xNGtdzOYsxF52FiuV3f\nIiZI+IECgYEA9NOLA+zLKAG0Zr828EISWD4FcwZD04r5K96KpBHVrf9a5naSSfb9\nLNCLhxdpEbob+ZYJCQxyZVo+ZgMsYBoePP48MwTiCMin+QKqs6D4tJ9MRDUuXpMC\nUKJoWSFLq9Umt6YHjzMSlEfqoKv6a51EWxFvvrwZNnwjWqEx9XnImUcCgYEAwjwC\nCvzpfTvsV4ZnFvXDXdLwEWvhsHQ4ekzai5TSl0ULAuvSmG/VD4kC1gm9Sr5jM1tt\nkh/yu34KgZaj4YyVvFRQbE2q8gjyzGK0B6IC9XjfDETUxGalhCwRXFp0jrXxyoev\nCvCjOgJvF29HKnrjztcC0Ay07nYx6dY+Djy0YAcCgYAduZV2S4i6+cICe5LbBtqd\nViJpPch8ZbItDl783qF397n8o0bNriw9BbD7HO+H1HXTDtFYBOfawGM1FYuMu38S\nXrfGZgBfmqUySY2aM6Aepfynh2Fy4Bx219EdiTpbyYxi3cirLUNDN5wYF+lWqYiE\nGhDcMpBJGjdcqJedO0UMvwKBgFmby6l8EtBHA/tBM3BBQ7eWaFDxP3bjt2ac7Dp3\nF0zYeoMHfun6tgXrxNYwOhcwjJ2V8Y/3k0lylbBBaivVawMutsewcUwmWrV2V+4p\njUnoUKbdXneZj4TRu9Sqmpl4USuJu3TFndhWZSAfo2pytYSoZ1DKe/KDrvVddNWm\npeSjAoGBALi+PLsGiTxBRDvYUmh2etorjUBQMuZyBsfzrgd45aH9JX07UgWPm5MP\n//VjtSJEzcDOGkwfjbylZ/ze/TqMnhhLFUaU8sQZW8vHGI4M49Dtvtwu66AeGdwa\n8pEzFvtBuQoLhOzE5MWr9J5UTeamwx53DiKWK6/AZwBozsSp/4oZ\n-----END RSA PRIVATE KEY-----\n"

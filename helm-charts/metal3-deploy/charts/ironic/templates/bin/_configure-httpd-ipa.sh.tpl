@@ -26,11 +26,10 @@ export INSPECTOR_EXTRA_ARGS
 render_j2_config /tmp/inspector.ipxe.j2 /shared/html/inspector.ipxe
 cp /tmp/uefi_esp.img /shared/html/
 
-sed -i 's/^Listen .*$/Listen [::]:'"$HTTP_PORT"'/' /etc/httpd/conf/httpd.conf
-sed -i -e 's|\(^[[:space:]]*\)\(DocumentRoot\)\(.*\)|\1\2 "/shared/html"|' \
-    -e 's|<Directory "/var/www/html">|<Directory "/shared/html">|' \
-    -e 's|<Directory "/var/www">|<Directory "/shared">|' /etc/httpd/conf/httpd.conf
+sed -i 's/^Listen .*$/Listen [::]:'"$HTTP_PORT"'/' /etc/apache2/listen.conf
+sed -i -e 's|\(^[[:space:]]*\)\(DocumentRoot\)\(.*\)|\1\2 "/shared/html"|' /etc/apache2/default-server.conf
+cat /tmp/docroot_shared >> /etc/apache2/default-server.conf
 
 # Log to std out/err
-sed -i -e 's%^ \+CustomLog.*%    CustomLog /dev/stderr combined%g' /etc/httpd/conf/httpd.conf
-sed -i -e 's%^ErrorLog.*%ErrorLog /dev/stderr%g' /etc/httpd/conf/httpd.conf
+grep -qxF 'CustomLog /dev/stderr combined' /etc/apache2/httpd.conf || echo 'CustomLog /dev/stderr combined' >> /etc/apache2/httpd.conf
+sed -i -e 's%^ErrorLog.*%ErrorLog /dev/stderr%g' /etc/apache2/httpd.conf

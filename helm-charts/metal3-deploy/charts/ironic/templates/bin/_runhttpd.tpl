@@ -7,8 +7,8 @@
 export HTTP_PORT=${HTTP_PORT:-"80"}
 export VMEDIA_TLS_PORT=${VMEDIA_TLS_PORT:-8083}
 
-INSPECTOR_ORIG_HTTPD_CONFIG=/etc/httpd/conf.d/inspector-apache.conf.j2
-INSPECTOR_RESULT_HTTPD_CONFIG=/etc/httpd/conf.d/ironic-inspector.conf
+INSPECTOR_ORIG_HTTPD_CONFIG=/etc/apache2/conf.d/inspector-apache.conf.j2
+INSPECTOR_RESULT_HTTPD_CONFIG=/etc/apache2/conf.d/ironic-inspector.conf
 export IRONIC_REVERSE_PROXY_SETUP=${IRONIC_REVERSE_PROXY_SETUP:-"false"}
 export INSPECTOR_REVERSE_PROXY_SETUP=${INSPECTOR_REVERSE_PROXY_SETUP:-"false"}
 
@@ -34,6 +34,10 @@ fi
 render_j2_config /tmp/inspector.ipxe.j2 /shared/html/inspector.ipxe
 cp /tmp/uefi_esp.img /shared/html/uefi_esp.img
 
+purelib=`python3 -m sysconfig | grep purelib | head -n 1 | awk '{print $3}'`
+purelib=`echo "$purelib" | tr -d '"'`
+cp $purelib/ironic/drivers/modules/boot.ipxe /shared/html/boot.ipxe
+
 if [ "$IRONIC_INSPECTOR_TLS_SETUP" = "true" ]; then
     if [[ "${INSPECTOR_REVERSE_PROXY_SETUP}" == "true" ]]; then
         render_j2_config $INSPECTOR_ORIG_HTTPD_CONFIG $INSPECTOR_RESULT_HTTPD_CONFIG
@@ -46,7 +50,7 @@ fi
 
 if [ "$IRONIC_TLS_SETUP" = "true" ]; then
     if [[ "${IRONIC_REVERSE_PROXY_SETUP}" == "true" ]]; then
-        render_j2_config /etc/httpd-ironic-api.conf.j2 /etc/httpd/conf.d/ironic.conf
+        render_j2_config /etc/httpd-ironic-api.conf.j2 /etc/apache2/conf.d/ironic.conf
     fi
     # Add user 'apache' to the group `ironic-inspector`, so httpd can access /etc/ironic-inspector and read the pasword file
     usermod -aG ironic apache
@@ -66,20 +70,20 @@ if [ -n "${INSPECTOR_HTPASSWD:-}" ]; then
 fi
 
 if [[ "${LISTEN_ALL_INTERFACES}" == "true" ]]; then
-    sed -i 's/^Listen .*$/Listen [::]:'"$HTTP_PORT"'/' /etc/httpd/conf/httpd.conf
+    sed -i 's/^Listen .*$/Listen [::]:'"$HTTP_PORT"'/' /etc/apache2/listen.conf
 else
-    sed -i 's/^Listen .*$/Listen '"$IRONIC_URL_HOST"':'"$HTTP_PORT"'/' /etc/httpd/conf/httpd.conf
+    sed -i 's/^Listen .*$/Listen '"$IRONIC_URL_HOST"':'"$HTTP_PORT"'/' /etc/apache2/listen.conf
 fi
-sed -i -e 's|\(^[[:space:]]*\)\(DocumentRoot\)\(.*\)|\1\2 "/shared/html"|' \
-    -e 's|<Directory "/var/www/html">|<Directory "/shared/html">|' \
-    -e 's|<Directory "/var/www">|<Directory "/shared">|' /etc/httpd/conf/httpd.conf
+
+sed -i -e 's|\(^[[:space:]]*\)\(DocumentRoot\)\(.*\)|\1\2 "/shared/html"|' /etc/apache2/default-server.conf
+cat /tmp/docroot_shared >> /etc/apache2/default-server.conf
 
 # Log to std out/err
-sed -i -e 's%^ \+CustomLog.*%    CustomLog /dev/stderr combined%g' /etc/httpd/conf/httpd.conf
-sed -i -e 's%^ErrorLog.*%ErrorLog /dev/stderr%g' /etc/httpd/conf/httpd.conf
+grep -qxF 'CustomLog /dev/stderr combined' /etc/apache2/httpd.conf || echo 'CustomLog /dev/stderr combined' >> /etc/apache2/httpd.conf
+sed -i -e 's%^ErrorLog.*%ErrorLog /dev/stderr%g' /etc/apache2/httpd.conf
 
 if [ "$IRONIC_VMEDIA_TLS_SETUP" = "true" ]; then
-    render_j2_config /etc/httpd-vmedia.conf.j2 /etc/httpd/conf.d/vmedia.conf
+    render_j2_config /etc/httpd-vmedia.conf.j2 /etc/apache2/conf.d/vmedia.conf
 fi
 
 if [[ "$IRONIC_INSPECTOR_TLS_SETUP" == "true"  && "${RESTART_CONTAINER_CERTIFICATE_UPDATED}" == "true" ]]; then
