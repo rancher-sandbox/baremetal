@@ -8,7 +8,7 @@ metadata:
     {{- include "ironic.labels" . | nindent 4 }}
 spec:
   issuerRef:
-    name: ironic 
+    name: {{ include "ironic.fullname" . }} 
   secretName: ironic-cacert 
   ipAddresses:  
     - {{ .Values.global.provisioningIP }} 
