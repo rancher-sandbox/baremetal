@@ -27,16 +27,19 @@ dependencies:
   - name: media
     version: 0.1.0
     alias: metal3-media
+    condition: global.enable_metal3_media_server
 
   - name: powerdns
     version: 0.1.0
     alias: metal3-powerdns
+    condition: global.enable_pdns
 
   # need to add the bitnami chart repo as well
   - name: external-dns
     version: 6.12.1
     repository: "https://charts.bitnami.com/bitnami"
     alias: metal3-external-dns
+    condition: global.enable_external_dns
 
   - name: baremetal-operator
     version: 0.1.1

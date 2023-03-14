@@ -3,6 +3,19 @@
 # Declare variables to be passed into your templates.
 
 global:
+  # whether to enable dnsmasq. If DHCP is already provided by the existing networking
+  # infrastructure, it is recommended to set enable_dnsmasq to 'false'.
+  enable_dnsmasq: true
+
+  # whether to enable Ironic services besides dnsmasq.
+  # NOTE: enable_dnsmasq has precedence over this option. If enable_dnsmasq is set
+  # to 'true' while enable_ironic is set to 'false', dnsmasq service will still be
+  # enabled.
+  enable_ironic: true
+
+  # whether to enable PXE boot capability
+  # NOTE: enable_dnsmasq must set to 'true' in order for this option to be effective.
+  enable_pxe_boot: true
 
   # DNS domain that all services will either be members of, or, in the
   # case of external-dns and pdns, manage.

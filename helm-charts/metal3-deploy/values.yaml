@@ -10,6 +10,41 @@
 
 # Define a global default for other charts to leverage.
 global:
+  # whether to enable external-dns
+  #
+  # NOTE: external-dns is required unless there are pre-existing methods that
+  # create DNS hostname records for the Ironic ingress resources that are used
+  # in bare metal provisioning. If using external-dns without pdns, a
+  # supported external-dns DNS integration must be configured.
+  # See for https://github.com/kubernetes-sigs/external-dns for
+  # additional details.
+  # In addition, the "dnsConfig" section must by updated with the IP and search domain
+  # of the external DNS server.
+  enable_external_dns: true
+
+  # whether to enable PowerDNS
+  # NOTE: although PowerDNS can be enabled without enabling external-dns,
+  # but it would not be very useful in the context of Metal3 deployment.
+  # Therefore, it is recommended to enable PowerDNS in conjunction with
+  # external-dns.
+  enable_pdns: true
+
+  # whether to enable media server.
+  enable_metal3_media_server: true
+
+  # whether to enable dnsmasq. If DHCP is already provided by the existing networking
+  # infrastructure, it is recommended to set enable_dnsmasq to 'false'.
+  enable_dnsmasq: true
+
+  # whether to enable PXE boot capability
+  # NOTE: enable_dnsmasq must set to 'true' in order for this option to be effective.
+  enable_pxe_boot: true
+
+  # whether to enable Ironic services besides dnsmasq.
+  # NOTE: enable_dnsmasq has precedence over this option. If enable_dnsmasq is set
+  # to 'true' while enable_ironic is set to 'false', dnsmasq service will still be
+  # enabled.
+  enable_ironic: true
 
   # DNS domain that all services will either be members of, or, in the
   # case of external-dns and pdns, manage.

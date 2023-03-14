@@ -39,7 +39,8 @@ spec:
       {{- range .Values.ironic }}
       {{- if .type }}
       {{ .type }}:
-      {{- end }}        
+      {{- end }}
+        {{- if or (and (ne .servname "ironic-dnsmasq") ($.Values.global.enable_ironic)) (and (eq .servname "ironic-dnsmasq") ($.Values.global.enable_dnsmasq)) }}
         - name: {{ .servname }}
           {{- if .image }}
           {{- with .image }}
@@ -138,6 +139,7 @@ spec:
             {{- $certvolmounts }}
            {{- end }} 
           {{- end }}
+      {{- end }}    
       {{- end }}    
    
       volumes:
