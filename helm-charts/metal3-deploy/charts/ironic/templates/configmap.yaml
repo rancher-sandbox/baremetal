@@ -30,6 +30,7 @@ data:
   IRONIC_RAMDISK_SSH_KEY: {{ .ironicRamdiskSshKey }}
   IRONIC_VMEDIA_HTTPD_SERVER_NAME: {{ tpl .bootServerAddress $ }} 
   {{- end }}
+  ENABLE_PXE_BOOT: "{{ .Values.global.enable_pxe_boot }}"
   DHCP_RANGE: {{ .Values.global.dhcpRange }}
   DNSMASQ_DEFAULT_ROUTER: {{ .Values.global.dnsmasqDefaultRouter }}
   PROVISIONING_INTERFACE: {{ .Values.global.provisioningInterface }}
