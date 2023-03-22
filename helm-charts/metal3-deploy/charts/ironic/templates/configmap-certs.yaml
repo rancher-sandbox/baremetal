@@ -1,4 +1,4 @@
-{{- if eq .Values.ingress.tlsSource "secrets" -}}
+{{- if and (eq .Values.ingress.tlsSource "secrets") (.Values.global.enable_ironic) -}}
 apiVersion: v1
 kind: ConfigMap 
 metadata:
