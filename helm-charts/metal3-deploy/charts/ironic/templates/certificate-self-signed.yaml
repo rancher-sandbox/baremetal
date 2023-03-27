@@ -1,4 +1,4 @@
-{{- if eq .Values.tls "ingress" -}}
+{{- if and (eq .Values.tls "ingress") (.Values.global.enable_ironic) -}}
   {{- if eq .Values.ingress.tlsSource "self" -}}
 apiVersion: cert-manager.io/v1 
 kind: Certificate 

@@ -11,4 +11,4 @@ data:
   {{ end }}
   {{ end }}
   get-resource.sh: |
-{{ include (print .Template.BasePath "/bin/_get-resource.sh.tpl") . | indent 4 }}          
+{{ include (print .Template.BasePath "/bin/_get-resource.sh.tpl") . | indent 4 }}
