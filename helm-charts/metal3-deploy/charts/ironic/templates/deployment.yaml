@@ -31,6 +31,11 @@ spec:
       {{- $vol := toYaml .Values.volumes | trim | nindent 8 }}
       {{- $certvolmounts := toYaml .Values.certVolumeMounts | trim | nindent 12}}
       {{- $tlssource := .Values.ingress.tlsSource }}
+      {{- $secvolmounts := toYaml .Values.secretVolMounts | trim | nindent 12}}
+      {{- $cacertvolmounts := toYaml .Values.cacertVolumeMounts | trim | nindent 12}}
+      {{- $trustvolmounts := toYaml .Values.trustVolMounts | trim | nindent 12}}
+      {{- $tls := .Values.tls }}
+
 
       {{- if .Values.baremetaloperator.ironichostNetwork }}
       hostNetwork: {{ .Values.baremetaloperator.ironichostNetwork }}
@@ -134,14 +139,33 @@ spec:
           volumeMounts:
             {{- $volmounts }}  
           {{- end }}
-          {{- if eq $tlssource "secrets" }}
+          {{- if  and ($.Values.global.enable_tls) (ne .servname "ironic-dnsmasq")  }}
+           {{- if (eq $tlssource "secrets") }}
+           {{- $cacertvolmounts }}
+           {{- else }}
+           {{- $trustvolmounts }}
+           {{- end }}
+          {{- end }}
+          {{- if and ($.Values.global.enable_tls) (eq $tls "ironic") }}
            {{- if or (eq .servname "ironic") (eq .servname "ironic-inspector") (eq .servname "ironic-httpd") }}
+            {{- if (eq $tlssource "secrets") }}
             {{- $certvolmounts }}
-           {{- end }} 
+            {{- end }}
+            {{- if or (eq $tlssource "self") (eq $tlssource "letsEncrypt") }}
+            {{- $secvolmounts }}
+            {{- end }}
+           {{- end }}
+          {{- end }}
+          {{- if and (eq .servname "ironic") ($.Values.global.enable_tls) }}
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - update-ca-certificates
           {{- end }}
       {{- end }}    
-      {{- end }}    
-   
+      {{- end }}
+
       volumes:
       {{- range .Values.volumes }}
       - name: {{ .name }}
@@ -155,11 +179,58 @@ spec:
           name : {{ .configMapName }}
         {{- end }}
       {{- end -}}
-      {{- if eq $tlssource "secrets" }}
+      {{- if ($.Values.global.enable_ironic) }}
+      {{- if $.Values.global.enable_tls }}
+      {{- if (eq $tlssource "secrets") }}
+      - name: ironic-trustca
+        configMap:
+          defaultMode: 493
+          name: ironic-certs
+      - name: ironicipa-trustca
+        configMap:
+          defaultMode: 493
+          name: ironic-certs    
+      {{- else }}
+      - name: ironic-trustcerts
+        secret:
+          secretName: ironic-cacert
+      - name: ironicipa-trustcerts
+        secret:
+          secretName: ironic-cacert    
+      {{- end }}
+      {{- end }}
+      {{- if and ($.Values.global.enable_tls) (eq $tlssource "secrets") (eq $tls "ironic") }}
       - name: ironic-certs
         configMap:
           defaultMode: 493
-          name: ironic-certs       
+          name: ironic-certs
+      - name: ironic-insp-certs
+        configMap:
+          defaultMode: 493
+          name: ironic-certs
+      - name: ironic-cacerts
+        configMap:
+          defaultMode: 493
+          name: ironic-certs
+      - name: ironic-insp-cacerts
+        configMap:
+          defaultMode: 493
+          name: ironic-certs
+      {{- end }}
+      {{- if and ($.Values.global.enable_tls) (or (eq $tlssource "self") (eq $tlssource "letsEncrypt")) (eq $tls "ironic") }}
+      - name: ironic-certs
+        secret:
+          secretName: ironic-cacert
+      - name: ironic-insp-certs
+        secret:
+          secretName: ironic-cacert
+      - name: vmedia-certs
+        secret:
+          secretName: ironic-cacert    
+      - name: vmedia-ca-certs
+        secret:
+          secretName: ironic-cacert    
+      {{- end }}
       {{- end }}
       {{- with .Values.global.nodeSelector }}
       nodeSelector:
