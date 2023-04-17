@@ -64,6 +64,9 @@ global:
   # Comment this out when pinning the pdns containers to a specfic host.
   nodeSelector: {}
 
+  # global.storageClass Global storage class for dynamic provisioning
+  storageClass: ""
+
 replicaCount: 1
 
 image:
@@ -259,7 +262,8 @@ certVolumeMounts:
 
 volumes:
   - name: ironic-data-volume    
-    configMapName: ""
+    persistentVolumeClaim:
+      claimName: ironic-shared-volume
   - name: ironic  
     configMapName: ironic-bin
   - name: ironic-ipa-downloader  
@@ -366,6 +370,10 @@ ironic:
       tag: 21.1.1
   - servname: ironic-inspector
     command: /bin/runironic-inspector
+    env:
+      - name: MARIADB_PASSWORD
+        secretKeyRefKey: password
+        secretKeyRefName: ironic-mariadb    
     envFrom:
       - configMapRefname: ironic-bmo
     image:
@@ -412,3 +420,15 @@ ironic:
 tlscerts:
   key: "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEAucGy4beWcxV+ruXbV2igUfUaYohU8SDqH6KIwJNAUzrot5uR\nf5gsC6105lfRD5dw7zW4RhMmVtU1HBMs6FIO2DWNPyRwb4slFm3P/tcBRI4Kixrp\nPqrujrI6nXjVI9HbCaEKs3aZpblY3+A6wER+6mm3CLV6msOhzS+0KP560pTXFIAi\n4tAIsL43TG+g2l7WnJKWUDGMlukrz2KPTEwiS3KQaQSZbWvvvpdb4brNo3kbooQ+\nZsSO/2tXjDRCJX7Hsi1QhpVmo7b4aYvMlYHuaqE0FvBRVG8B/WDlDwnmevOEvF/I\nuSS+3xN/6guHTEmkUQ3s0hEnyLSUuqQ79+LQ8QIDAQABAoIBABI7EHNWsU1aLrS7\nmmtZuWJRy+UfvDZuJIw2R3We/hEtFunuOrlrFeePfomc1MfS9SKFAzDdcEXVZwD6\nYM3sP8i4eMRZry9DWMB6xo8cSuOPjTlZysp7vC4FD/ukgEajsfuf8ozqduns5uwR\n9bIpBsu61Fvmc8H8sUSSCfx7/VHtXpcdxDgOmBQUMGya5ZkuHCOXpslEJRO+zz7o\n/xoimu62Ly5XPn9HVnP0DgyYhQLSxLpbvEleVFFC7/m6FtJa1SZNfxa8PNjCK7+d\nLLYMt2fgahZcsM/3/Fc+GU07TcScmgOmVwwTd0khcpq49xNGtdzOYsxF52FiuV3f\nIiZI+IECgYEA9NOLA+zLKAG0Zr828EISWD4FcwZD04r5K96KpBHVrf9a5naSSfb9\nLNCLhxdpEbob+ZYJCQxyZVo+ZgMsYBoePP48MwTiCMin+QKqs6D4tJ9MRDUuXpMC\nUKJoWSFLq9Umt6YHjzMSlEfqoKv6a51EWxFvvrwZNnwjWqEx9XnImUcCgYEAwjwC\nCvzpfTvsV4ZnFvXDXdLwEWvhsHQ4ekzai5TSl0ULAuvSmG/VD4kC1gm9Sr5jM1tt\nkh/yu34KgZaj4YyVvFRQbE2q8gjyzGK0B6IC9XjfDETUxGalhCwRXFp0jrXxyoev\nCvCjOgJvF29HKnrjztcC0Ay07nYx6dY+Djy0YAcCgYAduZV2S4i6+cICe5LbBtqd\nViJpPch8ZbItDl783qF397n8o0bNriw9BbD7HO+H1HXTDtFYBOfawGM1FYuMu38S\nXrfGZgBfmqUySY2aM6Aepfynh2Fy4Bx219EdiTpbyYxi3cirLUNDN5wYF+lWqYiE\nGhDcMpBJGjdcqJedO0UMvwKBgFmby6l8EtBHA/tBM3BBQ7eWaFDxP3bjt2ac7Dp3\nF0zYeoMHfun6tgXrxNYwOhcwjJ2V8Y/3k0lylbBBaivVawMutsewcUwmWrV2V+4p\njUnoUKbdXneZj4TRu9Sqmpl4USuJu3TFndhWZSAfo2pytYSoZ1DKe/KDrvVddNWm\npeSjAoGBALi+PLsGiTxBRDvYUmh2etorjUBQMuZyBsfzrgd45aH9JX07UgWPm5MP\n//VjtSJEzcDOGkwfjbylZ/ze/TqMnhhLFUaU8sQZW8vHGI4M49Dtvtwu66AeGdwa\n8pEzFvtBuQoLhOzE5MWr9J5UTeamwx53DiKWK6/AZwBozsSp/4oZ\n-----END RSA PRIVATE KEY-----\n"
   crt: "-----BEGIN CERTIFICATE-----\nMIIDATCCAekCFCVaxqdKRic/XTaG21I8D4vQIe7aMA0GCSqGSIb3DQEBCwUAMD0x\nCzAJBgNVBAYTAlVTMQswCQYDVQQIDAJDQTEhMB8GA1UECgwYSW50ZXJuZXQgV2lk\nZ2l0cyBQdHkgTHRkMB4XDTIyMTIwMTAxMjU0OVoXDTMyMTEyODAxMjU0OVowPTEL\nMAkGA1UEBhMCVVMxCzAJBgNVBAgMAkNBMSEwHwYDVQQKDBhJbnRlcm5ldCBXaWRn\naXRzIFB0eSBMdGQwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC5wbLh\nt5ZzFX6u5dtXaKBR9RpiiFTxIOofoojAk0BTOui3m5F/mCwLrXTmV9EPl3DvNbhG\nEyZW1TUcEyzoUg7YNY0/JHBviyUWbc/+1wFEjgqLGuk+qu6OsjqdeNUj0dsJoQqz\ndpmluVjf4DrARH7qabcItXqaw6HNL7Qo/nrSlNcUgCLi0AiwvjdMb6DaXtackpZQ\nMYyW6SvPYo9MTCJLcpBpBJlta+++l1vhus2jeRuihD5mxI7/a1eMNEIlfseyLVCG\nlWajtvhpi8yVge5qoTQW8FFUbwH9YOUPCeZ684S8X8i5JL7fE3/qC4dMSaRRDezS\nESfItJS6pDv34tDxAgMBAAEwDQYJKoZIhvcNAQELBQADggEBAIplgX7Hy/HbCvgX\n9DJwXzePAss1kxHCiJbfpsiGeJv3FaBi/ozg+ledUUNYiCKPRGTd7sKfapvt9xtk\nM2GJOUPuyFjvWNZrzYxnOXI+tm2G86O+8xe1ekX7FxGD/c/CZUWEKroOQzSNTGkN\nDWC9nZwxg8Kz4IIEiMpYui6+toMRXZ+gxOrytaD6bVI6FS3YkAt2LiG4NHlqls8I\nsT9e/hHYdsWQqKmpcAguJ5x2UyxPlxPJRFI1oT2dUTj9KfLPt3sXEaPNpDZAn2Hz\nUzafY2F72e4BPCH2lsdDI6WJ/W/gtyWjpdq5iTxWz8DVzX1D4TPDpU6y6ZJog3nv\n/eFgVWU=\n-----END CERTIFICATE-----\n"      
+
+
+persistence:
+  ironic:
+    # storageClass for the ironic shared volume
+    storageClass: ""
+    # size of the ironic shared volume
+    size: "1Gi"
+    # accessMode of the ironic shared volume PVC
+    accessMode: "ReadWriteMany"
+    # flag to indicate to keep pvc upon helm uninstall
+    keep: false
