@@ -94,6 +94,9 @@ global:
   # hostname accordingly.
   #nodeSelector:
     #kubernetes.io/hostname: "csrancher-n1"
+  
+  # Global storage class for dynamic provisioning
+  storageClass: ""
 
 
 #
@@ -226,4 +229,9 @@ metal3-ironic:
     # and ironic-python-agent.tar.md5). If not set, we install the
     # opensuse based IPA image
     #ipaBaseUri: "https://images.rdoproject.org/centos8/master/rdo_trunk/current-tripleo"
+  
+  persistence:
+    ironic:
+      # storageClass for the ironic shared volume
+      storageClass: ""
 
