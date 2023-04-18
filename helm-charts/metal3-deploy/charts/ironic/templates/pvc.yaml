@@ -13,8 +13,6 @@ spec:
   resources:
     requests:
       storage: {{ .Values.persistence.ironic.size }}
-  {{- if or .Values.global.storageClass .Values.persistence.ironic.storageClass }}
-  storageClassName: {{ .Values.global.storageClass | default .Values.persistence.ironic.storageClass }}
-  {{- end }}
+  storageClassName: {{ .Values.persistence.ironic.storageClass }}
   volumeMode: Filesystem
 {{- end -}}

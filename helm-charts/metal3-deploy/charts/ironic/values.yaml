@@ -64,9 +64,6 @@ global:
   # Comment this out when pinning the pdns containers to a specfic host.
   nodeSelector: {}
 
-  # global.storageClass Global storage class for dynamic provisioning
-  storageClass: ""
-
 replicaCount: 1
 
 image:
@@ -425,6 +422,7 @@ tlscerts:
 persistence:
   ironic:
     # storageClass for the ironic shared volume
+    # Ensure the storageClass is defined
     storageClass: ""
     # size of the ironic shared volume
     size: "1Gi"

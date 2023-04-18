@@ -94,9 +94,6 @@ global:
   # hostname accordingly.
   #nodeSelector:
     #kubernetes.io/hostname: "csrancher-n1"
-  
-  # Global storage class for dynamic provisioning
-  storageClass: ""
 
 
 #
@@ -214,6 +211,7 @@ metal3-baremetal-operator:
 #
 
 # Override any settings for the metal3 ironic service here
+# Ensure the storageClass is defined
 metal3-ironic:
   ingress:
     annotations: {}
