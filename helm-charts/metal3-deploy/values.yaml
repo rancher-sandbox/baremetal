@@ -156,7 +156,7 @@ metal3-external-dns:
   image:
     registry: registry.opensuse.org
     repository: isv/metal3/bci/external-dns/containerfile/suse/external-dns
-    tag: "0.13.2"
+    tag: "0.13.4"
 
   # external-dns will monitor these sources of IP address to name
   # mappings and automatically add/remove DNS entries as needed.
