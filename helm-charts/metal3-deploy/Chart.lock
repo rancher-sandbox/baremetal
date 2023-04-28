@@ -14,5 +14,9 @@ dependencies:
 - name: ironic
   repository: ""
   version: 0.1.1
-digest: sha256:d6472cb61930dc1bc433c6197ed76334653059cd2c5e20bbae2a83563569c366
-generated: "2023-03-09T00:10:28.877446707Z"
+- name: mariadb
+  repository: ""
+  version: 0.1.1
+digest: sha256:19c3815f1e91de52f4dede64e9b872eaa5acdfa8e5ed72a706b7209fc27d7ccb
+generated: "2023-04-19T19:59:27.74288079Z"
+

@@ -39,6 +39,9 @@ global:
   # IP Address assigned to network interface on provisioning network
   provisioningIP: 192.168.20.5
 
+  # Database ClusterIP address
+  database_clusterIP: 10.43.255.253
+
   # Global ingress annotations that is shared by all the ingress services.
   # For example, use it to override extern-dns records.
   ingress:
@@ -318,27 +321,7 @@ ironic:
       capabilities:
         add:
           - NET_ADMIN
-          - NET_RAW    
-  - servname: mariadb
-    env:
-      - name: MARIADB_PASSWORD
-        secretKeyRefKey: password
-        secretKeyRefName: ironic-mariadb
-      - name: RESTART_CONTAINER_CERTIFICATE_UPDATED
-        configMapKeyRefKey: RESTART_CONTAINER_CERTIFICATE_UPDATED
-        configMapKeyRefName: ironic-bmo   
-    image:
-      repository: registry.opensuse.org/isv/metal3/bci/ironic/containerfile/suse/mariadb
-      pullPolicy: IfNotPresent
-      tag: 10.6.7
-    execCommand:
-      - sh
-      - -c
-      - mysqladmin status -uironic -p$(printenv MARIADB_PASSWORD)  
-    ports:
-      - containerPort: 3306
-        name: mariadb
-        protocol: TCP    
+          - NET_RAW   
   - servname: ironic
     command: /bin/runironic
     envFrom:

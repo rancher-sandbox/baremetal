@@ -44,3 +44,6 @@ data:
   IRONIC_USE_MARIADB: "true"
   LISTEN_ALL_INTERFACES: "true"
   IRONIC_KERNEL_PARAMS: console=ttyS0
+  #DATABASE_HOST: {{ .Values.global.database_clusterIP }}
+  DATABASE_HOST: "127.0.0.1"
+  
