@@ -5,9 +5,17 @@
   {{- $_ := set .Values.ingress.annotations "kubernetes.io/ingress.class" .Values.ingress.className}}
   {{- end }}
 {{- end }}
-{{- if ne .Values.ingress.tlsSource "secret" }}
+{{- if ($.Values.global.enable_tls) }}
+  {{ $_ := set .Values.ingress.annotations "nginx.ingress.kubernetes.io/ssl-redirect" "true"}}
+  {{- if (eq .Values.tls "ironic") }}
+  {{ $_ := set .Values.ingress.annotations "nginx.ingress.kubernetes.io/backend-protocol"  "HTTPS"}}
+  {{ $_ := set .Values.ingress.annotations "nginx.ingress.kubernetes.io/ssl-passthrough"  "false"}}
+  {{- end }}
+{{- if or ( eq .Values.ingress.tlsSource "letsEncrypt" ) ( eq .Values.ingress.tlsSource "self" ) }}
   {{ $_ := set .Values.ingress.annotations "certmanager.k8s.io/issuer" $fullName}}
-  {{ $_ := set .Values.ingress.annotations "nginx.ingress.kubernetes.io/ssl-redirect" "false"}}
+{{- end }}  
+{{- else }}
+   {{ $_ := set .Values.ingress.annotations "nginx.ingress.kubernetes.io/ssl-redirect" "false"}}
 {{- end }}
 {{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion -}}
 apiVersion: networking.k8s.io/v1
@@ -34,7 +42,7 @@ spec:
     {{- range .Values.ingress.tls }}
     - hosts:
         {{- range .hosts }}
-        - {{ . | quote }}
+        - {{ tpl . $ }}
         {{- end }}
       secretName: {{ .secretName }}
     {{- end }}
