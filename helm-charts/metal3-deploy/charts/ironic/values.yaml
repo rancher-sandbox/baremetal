@@ -3,7 +3,7 @@
 # Declare variables to be passed into your templates.
 
 global:
-  enable_tls: true       
+  enable_tls: false
   # whether to enable dnsmasq. If DHCP is already provided by the existing networking
   # infrastructure, it is recommended to set enable_dnsmasq to 'false'.
   enable_dnsmasq: true
