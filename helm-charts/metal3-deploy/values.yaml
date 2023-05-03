@@ -81,6 +81,9 @@ global:
   # IP Address assigned to network interface on provisioning network
   provisioningIP: 192.168.20.5
 
+  # Database ClusterIP address
+  database_clusterIP: 10.43.255.253
+
   # Global ingress annotations that is shared by all the ingress services.
   # For example, use it to override extern-dns records.
   ingress:
@@ -94,9 +97,6 @@ global:
   # hostname accordingly.
   #nodeSelector:
     #kubernetes.io/hostname: "csrancher-n1"
-  
-  # Global storage class for dynamic provisioning
-  storageClass: ""
 
 
 #
@@ -137,6 +137,7 @@ metal3-powerdns:
     webserver:
       # port that PowerDNS webserver listens for API requests on
       port: 8081
+      password: changeme
 
   service:
 
@@ -159,7 +160,7 @@ metal3-external-dns:
   image:
     registry: registry.opensuse.org
     repository: isv/metal3/bci/external-dns/containerfile/suse/external-dns
-    tag: "0.13.2"
+    tag: "0.13.4"
 
   # external-dns will monitor these sources of IP address to name
   # mappings and automatically add/remove DNS entries as needed.
@@ -173,6 +174,13 @@ metal3-external-dns:
     - suse.baremetal
 
   # which DNS provider backend to use
+
+  # Uncomment this if using cloudflare and remove powerdns settings
+  # provider: cloudflare
+  # cloudflare:
+  #  apiToken: "foo"
+  #  proxied: false
+  
   provider: pdns
 
   # PowerDNS backend specific config settings
@@ -214,6 +222,7 @@ metal3-baremetal-operator:
 #
 
 # Override any settings for the metal3 ironic service here
+# Ensure the storageClass is defined
 metal3-ironic:
   ingress:
     annotations: {}
@@ -235,3 +244,6 @@ metal3-ironic:
       # storageClass for the ironic shared volume
       storageClass: ""
 
+metal3-mariadb:
+  persistence:
+    storageClass: ""

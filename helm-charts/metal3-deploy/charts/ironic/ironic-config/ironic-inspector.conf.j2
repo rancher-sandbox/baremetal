@@ -34,9 +34,9 @@ connection = sqlite:////var/lib/ironic-inspector/ironic-inspector.db
 # IO by not doing syncs all the time.
 sqlite_synchronous = False
 {% elif env.MARIADB_TLS_ENABLED == "true" %}
-connection = mysql+pymysql://ironic:{{ env.MARIADB_PASSWORD }}@127.0.0.1/ironic_inspector?charset=utf8&ssl=on&ssl_ca={{ env.MARIADB_CACERT_FILE }}
+connection = mysql+pymysql://ironic:{{ env.MARIADB_PASSWORD }}@{{ env.DATABASE_HOST }}/ironic_inspector?charset=utf8&ssl=on&ssl_ca={{ env.MARIADB_CACERT_FILE }}
 {% else %}
-connection = mysql+pymysql://ironic:{{ env.MARIADB_PASSWORD }}@127.0.0.1/ironic_inspector?charset=utf8
+connection = mysql+pymysql://ironic:{{ env.MARIADB_PASSWORD }}@{{ env.DATABASE_HOST }}/ironic_inspector?charset=utf8
 {% endif %}
 
 

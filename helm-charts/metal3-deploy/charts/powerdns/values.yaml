@@ -168,10 +168,10 @@ powerdns:
   webserver:
     address: 0.0.0.0
     port: 8081
-    password: foo
+    password: changeme
     allowfrom: 0.0.0.0/0,::/0
   api:
-    key: abcdef123456
+    key: 654321fedcba
   config: { dnsupdate: yes, loglevel: 6 }
   recursor:
     #To resolve internal addresses, you can add to the forward-zones, example: forward-zones: "suse.baremetal=127.0.0.1:54,example.com=100.100.100.100"

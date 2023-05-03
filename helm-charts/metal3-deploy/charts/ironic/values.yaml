@@ -3,6 +3,7 @@
 # Declare variables to be passed into your templates.
 
 global:
+  enable_tls: true       
   # whether to enable dnsmasq. If DHCP is already provided by the existing networking
   # infrastructure, it is recommended to set enable_dnsmasq to 'false'.
   enable_dnsmasq: true
@@ -39,6 +40,9 @@ global:
   # IP Address assigned to network interface on provisioning network
   provisioningIP: 192.168.20.5
 
+  # Database ClusterIP address
+  database_clusterIP: 10.43.255.253
+
   # Global ingress annotations that is shared by all the ingress services.
   # For example, use it to override extern-dns records.
   ingress:
@@ -63,9 +67,6 @@ global:
 
   # Comment this out when pinning the pdns containers to a specfic host.
   nodeSelector: {}
-
-  # global.storageClass Global storage class for dynamic provisioning
-  storageClass: ""
 
 replicaCount: 1
 
@@ -129,22 +130,25 @@ ingress:
           portname: httpd
 
   # self,letsEncrypt,secrets       
-  tlsSource: self        
+  tlsSource: self 
   tls:   
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
-  #
+    - secretName: ironic-cacert 
+      hosts:
+        - api.ironic.{{ .Values.global.dnsDomain }}
+        - boot.ironic.{{ .Values.global.dnsDomain }}
+        - cache.ironic.{{ .Values.global.dnsDomain }}
+        - inspector.ironic.{{ .Values.global.dnsDomain }}
+  
 
 letsEncrypt:
   # email: none@example.com
-  environment: production
+  environment: staging 
 
 #
 # tls
 #   Where to offload the TLS/SSL encryption
 # - ingress (default)
-# - external
+# - ironic 
 tls: ingress
 
 resources: {}
@@ -254,12 +258,48 @@ certVolumeMounts:
     name: ironic-certs
     subPath: tls.key
   - mountPath: /certs/ironic-inspector/tls.crt
-    name: ironic-certs
+    name: ironic-insp-certs
     subPath: tls.crt
   - mountPath: /certs/ironic-inspector/tls.key
-    name: ironic-certs
-    subPath: tls.key      
+    name: ironic-insp-certs
+    subPath: tls.key
+  - mountPath: /certs/ca/ironic/tls.crt
+    name: ironic-cacerts
+    subPath: tls.crt
+  - mountPath: /certs/ca/ironic-inspector/tls.crt
+    name: ironic-insp-cacerts
+    subPath: tls.crt
 
+secretVolMounts:
+  - name: ironic-certs
+    mountPath: "/certs/ironic"
+    readOnly: true
+  - name: ironic-insp-certs
+    mountPath: "/certs/ironic-inspector"
+    readOnly: true
+  - name: vmedia-certs
+    mountPath: "/certs/vmedia"
+    readOnly: true
+  - name: vmedia-ca-certs
+    mountPath: "/certs/ca/vmedia"
+    readOnly: true  
+
+cacertVolumeMounts:
+  - mountPath: /etc/pki/trust/anchors/ca.crt
+    name: ironic-trustca
+    subPath: tls.cacert
+  - mountPath: /shared/html/tstcerts/ca.crt
+    name: ironicipa-trustca
+    subPath: tls.cacert
+
+trustVolMounts:
+  - name: ironic-trustcerts
+    mountPath: "/etc/pki/trust/anchors"
+    readOnly: true
+  - name: ironicipa-trustcerts
+    mountPath: "/shared/html/tstcerts"
+    readOnly: true
+    
 volumes:
   - name: ironic-data-volume    
     persistentVolumeClaim:
@@ -268,11 +308,8 @@ volumes:
     configMapName: ironic-bin
   - name: ironic-ipa-downloader  
     configMapName: ironic-ipa-downloader
-
+   
 baremetaloperator:
-  cacheUrl: "http://cache.ironic.{{ .Values.global.dnsDomain }}/images"
-  deployKernelUrl: "http://boot.ironic.{{ .Values.global.dnsDomain }}/images/ironic-python-agent.kernel"
-  deployRamdiskUrl: "http://boot.ironic.{{ .Values.global.dnsDomain }}/images/ironic-python-agent.initramfs"
   # If no dhpHosts set, all mac addresses acknowledged
   dhcpHosts: ""
 
@@ -284,12 +321,7 @@ baremetaloperator:
   # and ironic-python-agent.tar.md5). If not set, we install the
   # opensuse based IPA image
   #ipaBaseUri: "https://images.rdoproject.org/centos8/master/rdo_trunk/current-tripleo"
-  ironicApiUrl: "http://api.ironic.{{ .Values.global.dnsDomain }}"
   ironicApiHost: "api.ironic.{{ .Values.global.dnsDomain }}"
-  ironicBootBaseUrl: "http://boot.ironic.{{ .Values.global.dnsDomain }}"
-  ironicEndpoint: "http://api.ironic.{{ .Values.global.dnsDomain }}/v1/"
-  ironicInspectorUrl: "http://inspector.ironic.{{ .Values.global.dnsDomain }}"
-  ironicInspectorEndpoint: "http://inspector.ironic.{{ .Values.global.dnsDomain }}/v1/"
   ironicInspectorHost: "inspector.ironic.{{ .Values.global.dnsDomain }}"
   ironicRamdiskSshKey: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHGYaMrmsmLbv3O6Fj+0kg/U8iY7pcbO9HkbN88OAD+5 colstrom@headnode"
   mariadbPassword: "changeme"   
@@ -321,27 +353,7 @@ ironic:
       capabilities:
         add:
           - NET_ADMIN
-          - NET_RAW    
-  - servname: mariadb
-    env:
-      - name: MARIADB_PASSWORD
-        secretKeyRefKey: password
-        secretKeyRefName: ironic-mariadb
-      - name: RESTART_CONTAINER_CERTIFICATE_UPDATED
-        configMapKeyRefKey: RESTART_CONTAINER_CERTIFICATE_UPDATED
-        configMapKeyRefName: ironic-bmo   
-    image:
-      repository: registry.opensuse.org/isv/metal3/bci/ironic/containerfile/suse/mariadb
-      pullPolicy: IfNotPresent
-      tag: 10.6.7
-    execCommand:
-      - sh
-      - -c
-      - mysqladmin status -uironic -p$(printenv MARIADB_PASSWORD)  
-    ports:
-      - containerPort: 3306
-        name: mariadb
-        protocol: TCP    
+          - NET_RAW   
   - servname: ironic
     command: /bin/runironic
     envFrom:
@@ -418,13 +430,14 @@ ironic:
         name: ironic-data-volume
 
 tlscerts:
-  key: "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEAucGy4beWcxV+ruXbV2igUfUaYohU8SDqH6KIwJNAUzrot5uR\nf5gsC6105lfRD5dw7zW4RhMmVtU1HBMs6FIO2DWNPyRwb4slFm3P/tcBRI4Kixrp\nPqrujrI6nXjVI9HbCaEKs3aZpblY3+A6wER+6mm3CLV6msOhzS+0KP560pTXFIAi\n4tAIsL43TG+g2l7WnJKWUDGMlukrz2KPTEwiS3KQaQSZbWvvvpdb4brNo3kbooQ+\nZsSO/2tXjDRCJX7Hsi1QhpVmo7b4aYvMlYHuaqE0FvBRVG8B/WDlDwnmevOEvF/I\nuSS+3xN/6guHTEmkUQ3s0hEnyLSUuqQ79+LQ8QIDAQABAoIBABI7EHNWsU1aLrS7\nmmtZuWJRy+UfvDZuJIw2R3We/hEtFunuOrlrFeePfomc1MfS9SKFAzDdcEXVZwD6\nYM3sP8i4eMRZry9DWMB6xo8cSuOPjTlZysp7vC4FD/ukgEajsfuf8ozqduns5uwR\n9bIpBsu61Fvmc8H8sUSSCfx7/VHtXpcdxDgOmBQUMGya5ZkuHCOXpslEJRO+zz7o\n/xoimu62Ly5XPn9HVnP0DgyYhQLSxLpbvEleVFFC7/m6FtJa1SZNfxa8PNjCK7+d\nLLYMt2fgahZcsM/3/Fc+GU07TcScmgOmVwwTd0khcpq49xNGtdzOYsxF52FiuV3f\nIiZI+IECgYEA9NOLA+zLKAG0Zr828EISWD4FcwZD04r5K96KpBHVrf9a5naSSfb9\nLNCLhxdpEbob+ZYJCQxyZVo+ZgMsYBoePP48MwTiCMin+QKqs6D4tJ9MRDUuXpMC\nUKJoWSFLq9Umt6YHjzMSlEfqoKv6a51EWxFvvrwZNnwjWqEx9XnImUcCgYEAwjwC\nCvzpfTvsV4ZnFvXDXdLwEWvhsHQ4ekzai5TSl0ULAuvSmG/VD4kC1gm9Sr5jM1tt\nkh/yu34KgZaj4YyVvFRQbE2q8gjyzGK0B6IC9XjfDETUxGalhCwRXFp0jrXxyoev\nCvCjOgJvF29HKnrjztcC0Ay07nYx6dY+Djy0YAcCgYAduZV2S4i6+cICe5LbBtqd\nViJpPch8ZbItDl783qF397n8o0bNriw9BbD7HO+H1HXTDtFYBOfawGM1FYuMu38S\nXrfGZgBfmqUySY2aM6Aepfynh2Fy4Bx219EdiTpbyYxi3cirLUNDN5wYF+lWqYiE\nGhDcMpBJGjdcqJedO0UMvwKBgFmby6l8EtBHA/tBM3BBQ7eWaFDxP3bjt2ac7Dp3\nF0zYeoMHfun6tgXrxNYwOhcwjJ2V8Y/3k0lylbBBaivVawMutsewcUwmWrV2V+4p\njUnoUKbdXneZj4TRu9Sqmpl4USuJu3TFndhWZSAfo2pytYSoZ1DKe/KDrvVddNWm\npeSjAoGBALi+PLsGiTxBRDvYUmh2etorjUBQMuZyBsfzrgd45aH9JX07UgWPm5MP\n//VjtSJEzcDOGkwfjbylZ/ze/TqMnhhLFUaU8sQZW8vHGI4M49Dtvtwu66AeGdwa\n8pEzFvtBuQoLhOzE5MWr9J5UTeamwx53DiKWK6/AZwBozsSp/4oZ\n-----END RSA PRIVATE KEY-----\n"
-  crt: "-----BEGIN CERTIFICATE-----\nMIIDATCCAekCFCVaxqdKRic/XTaG21I8D4vQIe7aMA0GCSqGSIb3DQEBCwUAMD0x\nCzAJBgNVBAYTAlVTMQswCQYDVQQIDAJDQTEhMB8GA1UECgwYSW50ZXJuZXQgV2lk\nZ2l0cyBQdHkgTHRkMB4XDTIyMTIwMTAxMjU0OVoXDTMyMTEyODAxMjU0OVowPTEL\nMAkGA1UEBhMCVVMxCzAJBgNVBAgMAkNBMSEwHwYDVQQKDBhJbnRlcm5ldCBXaWRn\naXRzIFB0eSBMdGQwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC5wbLh\nt5ZzFX6u5dtXaKBR9RpiiFTxIOofoojAk0BTOui3m5F/mCwLrXTmV9EPl3DvNbhG\nEyZW1TUcEyzoUg7YNY0/JHBviyUWbc/+1wFEjgqLGuk+qu6OsjqdeNUj0dsJoQqz\ndpmluVjf4DrARH7qabcItXqaw6HNL7Qo/nrSlNcUgCLi0AiwvjdMb6DaXtackpZQ\nMYyW6SvPYo9MTCJLcpBpBJlta+++l1vhus2jeRuihD5mxI7/a1eMNEIlfseyLVCG\nlWajtvhpi8yVge5qoTQW8FFUbwH9YOUPCeZ684S8X8i5JL7fE3/qC4dMSaRRDezS\nESfItJS6pDv34tDxAgMBAAEwDQYJKoZIhvcNAQELBQADggEBAIplgX7Hy/HbCvgX\n9DJwXzePAss1kxHCiJbfpsiGeJv3FaBi/ozg+ledUUNYiCKPRGTd7sKfapvt9xtk\nM2GJOUPuyFjvWNZrzYxnOXI+tm2G86O+8xe1ekX7FxGD/c/CZUWEKroOQzSNTGkN\nDWC9nZwxg8Kz4IIEiMpYui6+toMRXZ+gxOrytaD6bVI6FS3YkAt2LiG4NHlqls8I\nsT9e/hHYdsWQqKmpcAguJ5x2UyxPlxPJRFI1oT2dUTj9KfLPt3sXEaPNpDZAn2Hz\nUzafY2F72e4BPCH2lsdDI6WJ/W/gtyWjpdq5iTxWz8DVzX1D4TPDpU6y6ZJog3nv\n/eFgVWU=\n-----END CERTIFICATE-----\n"      
-
+  cacert: "-----BEGIN CERTIFICATE-----\nMIIE9TCCAt2gAwIBAgIJAIEyyig4o5FDMA0GCSqGSIb3DQEBCwUAMBExDzANBgNV\nBAMMBklyb25pYzAeFw0yMzA0MTgwMTE5NTFaFw0yNDA0MDgwMTE5NTFaMBExDzAN\nBgNVBAMMBklyb25pYzCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAPB4\n/IAO9XmvW09MZNaKLLu/K8t15yLqHGyUaIQeZFq7dZ+t7W3TdHiikB+9wjGJ82dm\nzxLcdNLy79s8ZGPb/j3/0cO6oCZgRtYZB1poM/cPn1l9AAEn1C1oLijcsJLcc+Rj\nE3e8AGqEiTSFpkjmooEZkFMgtjXjLmi3mIwmZS56fUh+B8acwS2+h/zeJyNe2GjN\nqhKfbBhI3Xrli7BqDVRUJe3dPS92AtdYdipLTb57RqJvwyAfw0sG8VCNczcHbm/6\nnyj9FuwU0onQzyhUJfGP32Xl/zjjGhqz2JGXMenhlfRDpp5IoRdq93z6PBzx5q3m\nt8zVL4U7N1vS89y0Wn7aNApqk6zP8H40ThhmvhNClsUNs4RMZrMOA4SAQG5a5sLF\nKPaqaA9ATzUeMRYo0m/eqxdWtcuIQhKdiG4CzaqKuVSenjcUfaTA8lvqzTR5fLYw\n7RFQXIUEstNRqO7tGQiIOcZYTaA2TcIBOjUFArt2eNR2JNqidyZgzrlJUzqJ2zMS\nejKtkily7EN+HqLfGupqJ/HKRvp8VIvvTDx2c4laSN02NDlkL8hvGEvZx02yjJex\nYrkw474WmE62cqVpiuSZx2HkoP/JHqeKIIB5NyYFkOcWuL6vLdINNKKYYo1ityjS\n/Px5Egg485oGVNhHs8Ea/PtGAuj8uLneS+1vGTx9AgMBAAGjUDBOMB0GA1UdDgQW\nBBRtUaXKw+sMrQeqzlndylAwx1ehOTAfBgNVHSMEGDAWgBRtUaXKw+sMrQeqzlnd\nylAwx1ehOTAMBgNVHRMEBTADAQH/MA0GCSqGSIb3DQEBCwUAA4ICAQBe4R7WqJCg\nPdkOEnPIhoUoOqBfubCK9mfNwgTFlV7lDKHyPspfNClqi3LGe9CQwwjEEldKtoAG\nYMyDViP1Vf9a5EmL7SevEdl90DSrG/ltAhl5cKGW0JBcxtmS18D9zz9rU+FGXek/\n4+QlSQHtPd6uAUj4fqjx8q2BdrpuIkBOPikR5rgd6F2JYSr+GjFZBisvvPEjSckN\nrFTM1yHlLFCnrrhpgcx1+YTmJggT5vn4567pl+ENqqE8VAnlq7SwrTXxqFNartuv\n7rAeNQdKWvsLUhXstj0BQIEqJgz9rulL/73fgxc6OLU0LJqi1WNNdXQwZmOpIJqs\nEwolVphBzqoHn07uPERdYS10F5tmtS0NppNxa5M6sFb3Imd9lFoAF3wOqItYvsBP\ni/uOoShsXnO6J/we1VPcamH+3w+1nPx5d89XYMUXdeILBaFgwKyKhmUYswZX9o0B\nL24QCCmKHZE43uuJzvS9d3qbzFa9HtSdiYbXxg5GMpqbzk4Q/quxRQKxo3GF/OGG\n76l9TCbadXU49V2XiNYEYc2FALKu1ZkQm/uJamloUrO/wi+CgYm5D+KkuZTLd5Tf\nRGTdk2bru820T4HBxMPUzoYHyqOZrX0UpiWRbIhAE2p361hihAKc4mvNWgOFR4vm\nMBbDhPTeF/21yS78x3A12H+mL+z7J03Zgg==\n-----END CERTIFICATE-----\n-----BEGIN CERTIFICATE-----\nMIIGBDCCA+ygAwIBAgIBATANBgkqhkiG9w0BAQsFADARMQ8wDQYDVQQDDAZJcm9u\naWMwIBcNMjMwNDE4MDEzOTAyWhgPMjA1MDA5MDMwMTM5MDJaMFsxCzAJBgNVBAYT\nAlVTMQswCQYDVQQIDAJDQTERMA8GA1UEBwwIU2FuIEpvc2UxDTALBgNVBAoMBFN1\nc2UxDDAKBgNVBAsMA0RldjEPMA0GA1UEAwwGSXJvbmljMIICIjANBgkqhkiG9w0B\nAQEFAAOCAg8AMIICCgKCAgEAsL9Nud0TlZwjidAfv4D/R5RtsDenZvQoHxe+A4XH\nLAuyuAsvICWKXrTAyNSRB0KPRzpPcrGbRF28N2UtmYwAJ3aBqSI7CKNVVOuzpEy3\nQcUv20LXLmW+CW3PDCg8QBs3RVlO1RutQ+AIQfjNYI8ryxdnnANiSTgMfIABhar6\nTnyRjMlKQRfBLcsz7xWkDmcnyLZD3X4aVUSFENtACCeErdyMGBznuh6jiJDfSew9\nOECZDfz84A81h8w9eFXC3pGtLpRQX0+Ae6t3dQjhhmfiKEUpcwaU0w+PA0cXkaNk\nBcjuXFry8u16WYBaLS4Bbcdh1IaqrpNN/vkVUHB7aBENhmnxX114K78c3cs88aUy\nKMgZRpCvG8z77TMUoue70BN9XQxTE5s4fZqUkytGdtAogjQ2nkGAaCeXYD6+qbUX\nAUXP6VhiK3bXFHPVC7TYU+Z7biG1O+iJFf9pZBHxYQdN1en+f9PlpxzvX14lObFR\n5HlR0uiI1HjQ2zzkDPfB6FH5K1gYobWZHZJ604g3yNHtYRD1AIPuwamSsNzRKZI/\nzNRPUKZb0gchrWMMw3ThjZsufCiCsdCIZ1Y+xyNAl7HmRHdD2AzVDYvjUOvXAhE9\n0z/LbMBkHAUXwor0IMwOtF3rlLa5V+6wedQtm2/Xt6mScil1n52mmcX/yT94xJvL\nbZMCAwEAAaOCARkwggEVMEEGA1UdIwQ6MDiAFG1RpcrD6wytB6rOWd3KUDDHV6E5\noRWkEzARMQ8wDQYDVQQDDAZJcm9uaWOCCQCBMsooOKORQzAJBgNVHRMEAjAAMAsG\nA1UdDwQEAwIEMDAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwgZgGA1Ud\nEQSBkDCBjYIfYXBpLmlyb25pYy5iYXJlbWV0YWwubWFuYWdlbWVudIIlaW5zcGVj\ndG9yLmlyb25pYy5iYXJlbWV0YWwubWFuYWdlbWVudIIgYm9vdC5pcm9uaWMuYmFy\nZW1ldGFsLm1hbmFnZW1lbnSCIWNhY2hlLmlyb25pYy5iYXJlbWV0YWwubWFuYWdl\nbWVudDANBgkqhkiG9w0BAQsFAAOCAgEAI/n/PVRTOoTzrANm2NwuoiIETBBCUC1m\nl+dW7oY7vWWqiMaaYAXa736eUYBjeB7OCq1pvuQ1vrmPzAR488z65nF4Aouxnwfh\n0d4NeQ3fxQrDL0tv4sgpEX6bE3OAbFeCRVPmE+BctAaBZ2DbEL66ZvyTQhCbfCZn\nrpV5jcBDeHkqy8ObpqWHbCmUjmlz2bIAf6w31loR5eLyBdX+CYTm48/cBu4fQjmA\ne4Pv2ZtQSJmFaGDSZ9ySWL7zfk1Y4xCbJWYD4IprPSGP8Gt7G0IvCooGSTtkk7uU\nPGK0OrlOe5nWyR+KhJ1gutSoKYrG2/F2x2YnfaekHHkDddG7HSxo2pHqyCKPdZ6p\nsKJS2vuRr01GKdewO76ifZM5HT9nU0CkzpNHdM1BS7nBLgSJmPOqHbB/JQ74DI/7\nm+MpaDmSkgODV3ewKO4qUYVCBQ6G73PptcR/vntBezFu6fqzJBCoxxhX0ub0q8is\nGGAnbzgjKLNv1mgALNDN32UtjyK0GhEZltchwoZy88UcLQTZmSQBVtSKK2V1W6rM\nZHOSCD7yb6rlYAhM4GvDwkQU4xjOGziR9A2gWeO2xCl6S9+e0n4tx3opUUy9YOWE\npFrVN1bQqpX5ChDReKwLVncKD/gfCpUzfVkdm8HPr8eR7qWiIzNnXOm31lpWhPnb\nE7zHS6fn5iU=\n-----END CERTIFICATE-----\n-----BEGIN CERTIFICATE-----\nMIIGBDCCA+ygAwIBAgIBATANBgkqhkiG9w0BAQsFADARMQ8wDQYDVQQDDAZJcm9u\naWMwIBcNMjMwNDE4MDE0MTQwWhgPMjA1MDA5MDMwMTQxNDBaMFsxCzAJBgNVBAYT\nAlVTMQswCQYDVQQIDAJDQTERMA8GA1UEBwwIU2FuIEpvc2UxDTALBgNVBAoMBFN1\nc2UxDDAKBgNVBAsMA0RldjEPMA0GA1UEAwwGSXJvbmljMIICIjANBgkqhkiG9w0B\nAQEFAAOCAg8AMIICCgKCAgEAwNg3biQ+OdQZlYukHzMqUo9+JyU8YVIYY3uQGERa\ncnb+0uisQUqvTaOdpxaCHuA/jaeq7KdXehy7hvoorpOfyK3FoKI4EfPBDDbZkQ4f\nGvpFHhJP5g/jTee2/pzyhCI3AOkBBulYj3eI1nOPAMKkeavJp4GcLWNMVcrCR5tB\nTZWFZMORWfNBs1prdY2iiVVFf8C7oBHj9Mz6dbjrg/JFbXtsbnwmJAYieJxh34bi\nSWOkyFYAvZMZRrSteahlXMZlJU26Yx41CAtg/bLqiUQ6+XRAmeQNIDH6pST8bDsf\nwb1cZ1gTJ6SY3ObcMVEA5STo3ICW/N33AVH03q56A1t1bYQaTfgaPxzIrFTZC2cL\nNgKn1rMBfQloWKca9njW8BUCgk7qhwPh//m+RJe4r2NIidWQb9UTWzY16iNWK2yi\nlTs2vfoIWpV87wxScEC0WtWMPuGpIi8hSivmxYHPsV/v4lIrxcMB39hFKKrHYJYt\njBVUEpXNzMB4XiVlV2dQl7wkvWIxvGNFtMe5JQ2mvqsOpZ/zcuKok6/5P/A6BpGB\nBN8e2bEPXwPWh7GpLWoQw3N1LnxhbstgJBht0ARy4XDwxagVddwxe1MkJB32lyK5\nljJX3G7FkFDiitnj6cGsv8dxjTGaVIPIKy+jtrs06cGFmZfkMQ5F5+OaM8cycnQh\nOEUCAwEAAaOCARkwggEVMEEGA1UdIwQ6MDiAFG1RpcrD6wytB6rOWd3KUDDHV6E5\noRWkEzARMQ8wDQYDVQQDDAZJcm9uaWOCCQCBMsooOKORQzAJBgNVHRMEAjAAMAsG\nA1UdDwQEAwIEMDAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwgZgGA1Ud\nEQSBkDCBjYIfYXBpLmlyb25pYy5iYXJlbWV0YWwubWFuYWdlbWVudIIlaW5zcGVj\ndG9yLmlyb25pYy5iYXJlbWV0YWwubWFuYWdlbWVudIIgYm9vdC5pcm9uaWMuYmFy\nZW1ldGFsLm1hbmFnZW1lbnSCIWNhY2hlLmlyb25pYy5iYXJlbWV0YWwubWFuYWdl\nbWVudDANBgkqhkiG9w0BAQsFAAOCAgEA8C8dIJCxzCcLv1J40WPVVuVgH2gmRYaN\np0F7ilyE5falI42XyBqSpPueL1ePXqWLZBgXgrsb/H8b5rUa8OEr865bmiou1odz\n7DxmfHHED3+NcqQuExnb+rfQkTqa2eO/+X+sDMfvp0V2+3HFRLtoPQr3uY4i2q+3\nE2388v8JyeTw9bAW2u+JAn8XfGh3NJ0F1RL9T1GWt0VrmwsJ4RUQeOArwRhFRPpZ\nrzxYiLoaOXlCzRNUUCcBI6Nxi/ef/0qam2W4XZFrkDZrRh/YEacHucULfqL0BAwo\nmK6VvvFnvBK2gFCG7loz6H93PqxeAPmMLP8WrmU12iY0bd+zxujYZv6UZXMvhFJD\nVXZC8aUHWTPyjtXod5Snt5/jQ4K7aYaFGF5EPnuDfyFhYRS7mP7kH7APDUOGuTEw\nc2ViugJIAgojayRmA/DTtO3JLHUJaiWfRIVB0tB05qgSiBB8BmLy4mFZ6Hzyj/0a\ndijDtdM+boSXYln5kZcS3LKtcs7m/uFpcUJGwEshNwPevfZQ+hMKa1doRMYFbb1i\nIwax0NWu7dweP56FvNw2PslCNlc7rg59kUF9t0Q57IhgNI7l9RyPUO/rLp6x5Usm\n8jq+8BaAFE9K2V5fKQv9cnCuYlM8Ah4G1OcaYB6EWhqWlxF4GvriOFgjawjfZpj2\n+mr8GCzHwqo=\n-----END CERTIFICATE-----\n"
+  key: "-----BEGIN PRIVATE KEY-----\n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\nWyLF9Yv5zHefyRRI59XbXejvIFD46SuQ\n-----END PRIVATE KEY-----\n"
+  crt: "-----BEGIN CERTIFICATE-----\nMIIGBDCCA+ygAwIBAgIBATANBgkqhkiG9w0BAQsFADARMQ8wDQYDVQQDDAZJcm9u\naWMwIBcNMjMwNDE4MDEzOTAyWhgPMjA1MDA5MDMwMTM5MDJaMFsxCzAJBgNVBAYT\nAlVTMQswCQYDVQQIDAJDQTERMA8GA1UEBwwIU2FuIEpvc2UxDTALBgNVBAoMBFN1\nc2UxDDAKBgNVBAsMA0RldjEPMA0GA1UEAwwGSXJvbmljMIICIjANBgkqhkiG9w0B\nAQEFAAOCAg8AMIICCgKCAgEAsL9Nud0TlZwjidAfv4D/R5RtsDenZvQoHxe+A4XH\nLAuyuAsvICWKXrTAyNSRB0KPRzpPcrGbRF28N2UtmYwAJ3aBqSI7CKNVVOuzpEy3\nQcUv20LXLmW+CW3PDCg8QBs3RVlO1RutQ+AIQfjNYI8ryxdnnANiSTgMfIABhar6\nTnyRjMlKQRfBLcsz7xWkDmcnyLZD3X4aVUSFENtACCeErdyMGBznuh6jiJDfSew9\nOECZDfz84A81h8w9eFXC3pGtLpRQX0+Ae6t3dQjhhmfiKEUpcwaU0w+PA0cXkaNk\nBcjuXFry8u16WYBaLS4Bbcdh1IaqrpNN/vkVUHB7aBENhmnxX114K78c3cs88aUy\nKMgZRpCvG8z77TMUoue70BN9XQxTE5s4fZqUkytGdtAogjQ2nkGAaCeXYD6+qbUX\nAUXP6VhiK3bXFHPVC7TYU+Z7biG1O+iJFf9pZBHxYQdN1en+f9PlpxzvX14lObFR\n5HlR0uiI1HjQ2zzkDPfB6FH5K1gYobWZHZJ604g3yNHtYRD1AIPuwamSsNzRKZI/\nzNRPUKZb0gchrWMMw3ThjZsufCiCsdCIZ1Y+xyNAl7HmRHdD2AzVDYvjUOvXAhE9\n0z/LbMBkHAUXwor0IMwOtF3rlLa5V+6wedQtm2/Xt6mScil1n52mmcX/yT94xJvL\nbZMCAwEAAaOCARkwggEVMEEGA1UdIwQ6MDiAFG1RpcrD6wytB6rOWd3KUDDHV6E5\noRWkEzARMQ8wDQYDVQQDDAZJcm9uaWOCCQCBMsooOKORQzAJBgNVHRMEAjAAMAsG\nA1UdDwQEAwIEMDAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwgZgGA1Ud\nEQSBkDCBjYIfYXBpLmlyb25pYy5iYXJlbWV0YWwubWFuYWdlbWVudIIlaW5zcGVj\ndG9yLmlyb25pYy5iYXJlbWV0YWwubWFuYWdlbWVudIIgYm9vdC5pcm9uaWMuYmFy\nZW1ldGFsLm1hbmFnZW1lbnSCIWNhY2hlLmlyb25pYy5iYXJlbWV0YWwubWFuYWdl\nbWVudDANBgkqhkiG9w0BAQsFAAOCAgEAI/n/PVRTOoTzrANm2NwuoiIETBBCUC1m\nl+dW7oY7vWWqiMaaYAXa736eUYBjeB7OCq1pvuQ1vrmPzAR488z65nF4Aouxnwfh\n0d4NeQ3fxQrDL0tv4sgpEX6bE3OAbFeCRVPmE+BctAaBZ2DbEL66ZvyTQhCbfCZn\nrpV5jcBDeHkqy8ObpqWHbCmUjmlz2bIAf6w31loR5eLyBdX+CYTm48/cBu4fQjmA\ne4Pv2ZtQSJmFaGDSZ9ySWL7zfk1Y4xCbJWYD4IprPSGP8Gt7G0IvCooGSTtkk7uU\nPGK0OrlOe5nWyR+KhJ1gutSoKYrG2/F2x2YnfaekHHkDddG7HSxo2pHqyCKPdZ6p\nsKJS2vuRr01GKdewO76ifZM5HT9nU0CkzpNHdM1BS7nBLgSJmPOqHbB/JQ74DI/7\nm+MpaDmSkgODV3ewKO4qUYVCBQ6G73PptcR/vntBezFu6fqzJBCoxxhX0ub0q8is\nGGAnbzgjKLNv1mgALNDN32UtjyK0GhEZltchwoZy88UcLQTZmSQBVtSKK2V1W6rM\nZHOSCD7yb6rlYAhM4GvDwkQU4xjOGziR9A2gWeO2xCl6S9+e0n4tx3opUUy9YOWE\npFrVN1bQqpX5ChDReKwLVncKD/gfCpUzfVkdm8HPr8eR7qWiIzNnXOm31lpWhPnb\nE7zHS6fn5iU=\n-----END CERTIFICATE-----\n"
 
 persistence:
   ironic:
     # storageClass for the ironic shared volume
+    # Ensure the storageClass is defined
     storageClass: ""
     # size of the ironic shared volume
     size: "1Gi"

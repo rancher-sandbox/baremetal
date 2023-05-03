@@ -92,9 +92,9 @@ connection = sqlite:////var/lib/ironic/ironic.sqlite
 # IO by not doing syncs all the time.
 sqlite_synchronous = False
 {% elif env.MARIADB_TLS_ENABLED == "true" %}
-connection = mysql+pymysql://ironic:{{ env.MARIADB_PASSWORD }}@127.0.0.1/ironic?charset=utf8&ssl=on&ssl_ca={{ env.MARIADB_CACERT_FILE }}
+connection = mysql+pymysql://ironic:{{ env.MARIADB_PASSWORD }}@{{ env.DATABASE_HOST }}/ironic?charset=utf8&ssl=on&ssl_ca={{ env.MARIADB_CACERT_FILE }}
 {% else %}
-connection = mysql+pymysql://ironic:{{ env.MARIADB_PASSWORD }}@127.0.0.1/ironic?charset=utf8
+connection = mysql+pymysql://ironic:{{ env.MARIADB_PASSWORD }}@{{ env.DATABASE_HOST }}/ironic?charset=utf8
 {% endif %}
 
 [deploy]
@@ -193,7 +193,7 @@ images_path = /shared/html/tmp
 instance_master_path = /shared/html/master_images
 tftp_master_path = /shared/tftpboot/master_images
 tftp_root = /shared/tftpboot
-kernel_append_params = nofb nomodeset vga=normal ipa-insecure=1 {% if env.IRONIC_RAMDISK_SSH_KEY %}sshkey="{{ env.IRONIC_RAMDISK_SSH_KEY|trim }}"{% endif %} {{ env.IRONIC_KERNEL_PARAMS|trim }}
+kernel_append_params = nofb nomodeset vga=normal ipa-insecure={{ env.IPA_INSECURE }} {% if env.IRONIC_RAMDISK_SSH_KEY %}sshkey="{{ env.IRONIC_RAMDISK_SSH_KEY|trim }}"{% endif %} {{ env.IRONIC_KERNEL_PARAMS|trim }}
 # This makes networking boot templates generated even for nodes using local
 # boot (the default), ensuring that they boot correctly even if they start
 # netbooting for some reason (e.g. with the noop management interface).
@@ -203,15 +203,15 @@ ipxe_fallback_script = inspector.ipxe
 
 [redfish]
 use_swift = false
-kernel_append_params = nofb nomodeset vga=normal ipa-insecure=1 {% if env.IRONIC_RAMDISK_SSH_KEY %}sshkey="{{ env.IRONIC_RAMDISK_SSH_KEY|trim }}"{% endif %} {{ env.IRONIC_KERNEL_PARAMS|trim }}
+kernel_append_params = nofb nomodeset vga=normal ipa-insecure={{ env.IPA_INSECURE }} {% if env.IRONIC_RAMDISK_SSH_KEY %}sshkey="{{ env.IRONIC_RAMDISK_SSH_KEY|trim }}"{% endif %} {{ env.IRONIC_KERNEL_PARAMS|trim }}
 
 [ilo]
 use_swift = {{ env.IRONIC_ILO_USE_SWIFT }}
 use_web_server_for_images = {{ env.IRONIC_ILO_USE_WEB_SERVER_FOR_IMAGES }}
-kernel_append_params = nofb nomodeset vga=normal ipa-insecure=1 {% if env.IRONIC_RAMDISK_SSH_KEY %}sshkey="{{ env.IRONIC_RAMDISK_SSH_KEY|trim }}"{% endif %} {{ env.IRONIC_KERNEL_PARAMS|trim }}
+kernel_append_params = nofb nomodeset vga=normal ipa-insecure={{ env.IPA_INSECURE }} {% if env.IRONIC_RAMDISK_SSH_KEY %}sshkey="{{ env.IRONIC_RAMDISK_SSH_KEY|trim }}"{% endif %} {{ env.IRONIC_KERNEL_PARAMS|trim }}
 
 [irmc]
-kernel_append_params = nofb nomodeset vga=normal ipa-insecure=1 {% if env.IRONIC_RAMDISK_SSH_KEY %}sshkey="{{ env.IRONIC_RAMDISK_SSH_KEY|trim }}"{% endif %} {{ env.IRONIC_KERNEL_PARAMS|trim }}
+kernel_append_params = nofb nomodeset vga=normal ipa-insecure={{ env.IPA_INSECURE }} {% if env.IRONIC_RAMDISK_SSH_KEY %}sshkey="{{ env.IRONIC_RAMDISK_SSH_KEY|trim }}"{% endif %} {{ env.IRONIC_KERNEL_PARAMS|trim }}
 
 [service_catalog]
 endpoint_override = {{ env.IRONIC_API_BASE_URL }}

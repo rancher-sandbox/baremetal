@@ -13,6 +13,7 @@ data:
   PROVISIONING_IP: {{ .Values.global.provisioningIP }}
   IRONIC_FAST_TRACK: "true"
   RESTART_CONTAINER_CERTIFICATE_UPDATED: "false"
+  IRONIC_INSECURE: "true"
 kind: ConfigMap
 metadata:
   name: baremetal-operator-ironic
