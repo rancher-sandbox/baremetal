@@ -244,6 +244,12 @@ metal3-ironic:
       # storageClass for the ironic shared volume
       storageClass: ""
 
+#
+# Database Service
+#
+
+# Override any settings for the metal3 mariadb service here
 metal3-mariadb:
+  # storageClass for the mysql datastore
   persistence:
     storageClass: ""
