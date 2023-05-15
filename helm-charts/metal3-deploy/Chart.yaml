@@ -45,6 +45,18 @@ dependencies:
     version: 0.1.1
     alias: metal3-baremetal-operator
 
+  - name: nfs-subdir-external-provisioner
+    repository: "https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner"
+    version: 4.0.18
+    alias: metal3-nfs-subdir-external-provisioner-ironic
+    condition: global.enable_metal3_nfs_subdir_external_provisioner_for_ironic
+
+  - name: nfs-subdir-external-provisioner
+    repository: "https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner"
+    version: 4.0.18
+    alias: metal3-nfs-subdir-external-provisioner-mariadb
+    condition: global.enable_metal3_nfs_subdir_external_provisioner_for_mariadb
+
   - name: ironic
     version: 0.1.1
     alias: metal3-ironic
