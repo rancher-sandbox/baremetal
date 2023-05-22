@@ -1,3 +1,5 @@
+# DEPRECATED: The contents of this repo have been migrated to https://github.com/suse-edge/charts for ongoing development and maintenance. 
+
 # Metal3 deployment and demo Scripts and Manifests
 
 This repo contains (almost) everything needed to get a working metal3
@@ -23,7 +25,6 @@ External DNS can also support `pdns` (PowerDNS) provider. In order to use PowerD
 * POWERDNS_SERVER_URL: the PowerDNS API endpoint. i.e. `https://10.43.255.254:8081`
 * POWERDNS_API_KEY: the PowerDNS API key which authorize external DNS to update DNS records for a given zone
 * DNS_DOMAIN: the domain, or DNS zone, to use for all the cluster DNS records
-
 
 # Metal3 deployment using helmcharts
 
