@@ -1,0 +1,23 @@
+namespace: cattle-system
+helmCharts:
+  - name: rancher
+    version: {{ .Env.RANCHER_VERSION }}
+    repo: https://releases.rancher.com/server-charts/stable
+    releaseName: rancher
+    namespace: cattle-system
+    includeCRDs: true
+    valuesInline:
+      hostname: {{ .Env.RANCHER_HOSTNAME }}
+      replicas: 3
+      ingress:
+        tls:
+          source: letsEncrypt
+resources:
+  - resource/Secret/dns-provider-credentials.yaml
+patches:
+  - path: patch/Issuer/rancher.yaml
+    target:
+      group: cert-manager.io
+      version: v1
+      kind: Issuer
+      name: rancher
